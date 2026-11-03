@@ -1,27 +1,100 @@
-/* layout: dark top bar, sidebar of portfolios, main column with profile, items, add-item form */
+/* Layout: dark top bar, sidebar of portfolios, main column with profile, items, add-item form */
 
 :root {
-    --ink: #1d2433;
-    --paper: #f3f5f8;
-    --panel: #fff;
-    --line: #dde2ea;
-    --accent: #e8590c;
-    --accent-dark: #c44a08;
-    --muted: #5d6676;
-}
-body {
-    background: var(--paper);
-    color: var(--ink);
-    font-family: "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --accent: #d87f19;         
+  --accent-dark: #9f2323;    
+  /* พื้นหลังแถบ navbar */
+  --ink: #0f0f0f;            
+  /* พื้นหลังเว็บ */
+  --paper: #f8f9fa;          
+  /* พื้นหลังการ์ด */
+  --panel: #ffffff;          
+  /* สีเส้นขอบ */
+  --line: #e9ecef;           
+  /* สีข้อความคำแนะนำ */
+  --muted: #6c757d; 
+  --secondary: #9ca6b0;
 }
 
+body {
+  background: var(--paper);
+  color: #212529;
+  font-family: 'Noto Sans Thai', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* แต่งแถบ navbar ด้านบน */
 .app-nav {
-    background: var(--ink);
-    padding-block: 0.75rem;
+  background: var(--ink);
+  padding-block: 0.75rem;
 }
 
 .app-nav .navbar-brand {
-    color: #fff;
-    font-weight: 700;
-    letter-spacing: 0.02rem;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.02rem;
+}
+
+.brand-sub {
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+/* แต่งการ์ด panel ฟอร์ม */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+}
+
+.panel-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--ink);
+}
+
+/* สัญลักษณ์จำเป็นต้องกรอก (*) ที่เป็นสีแดงส้ม */
+.req { 
+  color: var(--accent); 
+  font-weight: bold;
+}
+
+.hint { 
+  color: var(--muted); 
+  font-weight: 400; 
+  font-size: 0.8rem; 
+}
+
+/* ปุ่มหลัก สีส้มตามมอ */
+.btn-accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.btn-accent:hover, 
+.btn-accent:focus {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* แต่งขอบเรืองแสงเวลากดพิมพ์ในช่องกรอก */
+.form-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.25rem rgba(216, 127, 25, 0.15);
+}
+
+#portfolio-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.30em 0.65em;
+  vertical-align: middle;
 }
