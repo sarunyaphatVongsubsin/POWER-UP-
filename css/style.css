@@ -1,0 +1,27 @@
+/* layout: dark top bar, sidebar of portfolios, main column with profile, items, add-item form */
+
+:root {
+    --ink: #1d2433;
+    --paper: #f3f5f8;
+    --panel: #fff;
+    --line: #dde2ea;
+    --accent: #e8590c;
+    --accent-dark: #c44a08;
+    --muted: #5d6676;
+}
+body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.app-nav {
+    background: var(--ink);
+    padding-block: 0.75rem;
+}
+
+.app-nav .navbar-brand {
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.02rem;
+}
