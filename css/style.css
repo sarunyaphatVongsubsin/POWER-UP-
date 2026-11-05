@@ -577,3 +577,121 @@ button:focus {
   border-color: #ef8354;
   color: #8a2b14;
 }
+
+/* ให้กล่อง Portfolio Items ขยายเต็มพื้นที่ที่เหลือ */
+.items-panel {
+  flex: 1 1 auto;
+}
+.items-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.items-grid:has(> p) {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* ===== Toast มุมขวาล่าง ===== */
+.toast-msg {
+  border-radius: 1rem;
+  animation: toast-in 0.25s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast-msg.warning {
+  background: #fff7e0;
+  border-color: #f2b84b;
+  color: #7a5200;
+}
+
+.toast-msg.hide {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== หน้าต่างยืนยัน ===== */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1090;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(107, 69, 82, 0.35);
+  animation: confirm-fade 0.15s ease;
+}
+
+.confirm-box {
+  width: 100%;
+  max-width: 380px;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 1.25rem;
+  padding: 1.4rem;
+  box-shadow: var(--shadow);
+  animation: toast-in 0.2s ease;
+}
+
+.confirm-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+
+.confirm-message {
+  color: var(--ink);
+  margin-bottom: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.btn-confirm-cancel,
+.btn-confirm-ok {
+  border-radius: 999px;
+  padding: 0.4rem 1.2rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+}
+
+.btn-confirm-cancel {
+  background: #fff;
+  color: var(--ink);
+  border: 2px solid var(--line);
+}
+
+.btn-confirm-cancel:hover {
+  background: var(--accent-soft);
+}
+
+.btn-confirm-ok {
+  background: var(--accent);
+  color: #fff;
+  border: 2px solid var(--accent);
+}
+
+.btn-confirm-ok:hover {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+@keyframes confirm-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
