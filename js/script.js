@@ -49,15 +49,80 @@ async function fetchSamplePortfolios() {
 
 // ===== UI helpers =====
 function showStatus(message, type) {
-  const el = document.getElementById("save-status-message");
-  if (!el) return;
-  el.textContent = message;
-  el.className = "alert alert-" + (type || "success") + " mt-3";
-  el.style.display = "block";
-  clearTimeout(showStatus._timer);
-  showStatus._timer = setTimeout(function () {
-    el.style.display = "none";
+  const area = document.getElementById("toast-area");
+  if (!area) return;
+  const kind = type === "danger" ? "error" : type === "warning" ? "warning" : "success";
+  const toast = document.createElement("div");
+  toast.className = "toast-msg " + kind;
+  toast.setAttribute("role", "status");
+  toast.textContent = message;
+  area.appendChild(toast);
+  setTimeout(function () {
+    toast.classList.add("hide");
+    setTimeout(function () { toast.remove(); }, 300);
   }, 3000);
+}
+
+// หน้าต่างยืนยันตามธีมเว็บ (แทน confirm) คืนค่า Promise<boolean>
+function confirmDialog(message, options) {
+  const opts = options || {};
+  return new Promise(function (resolve) {
+    const previousFocus = document.activeElement;
+
+    const overlay = document.createElement("div");
+    overlay.className = "confirm-overlay";
+
+    const box = document.createElement("div");
+    box.className = "confirm-box";
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-modal", "true");
+    box.setAttribute("aria-labelledby", "confirm-title");
+
+    const title = document.createElement("h3");
+    title.id = "confirm-title";
+    title.className = "confirm-title";
+    title.textContent = opts.title || "ยืนยันการทำรายการ";
+
+    const msg = document.createElement("p");
+    msg.className = "confirm-message";
+    msg.textContent = message;
+
+    const actions = document.createElement("div");
+    actions.className = "confirm-actions";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "btn-confirm-cancel";
+    cancelBtn.textContent = opts.cancelText || "ยกเลิก";
+
+    const okBtn = document.createElement("button");
+    okBtn.type = "button";
+    okBtn.className = "btn-confirm-ok";
+    okBtn.textContent = opts.confirmText || "ยืนยัน";
+
+    function close(result) {
+      document.removeEventListener("keydown", onKey);
+      overlay.remove();
+      if (previousFocus && previousFocus.focus) previousFocus.focus();
+      resolve(result);
+    }
+    function onKey(e) {
+      if (e.key === "Escape") close(false);
+    }
+
+    cancelBtn.addEventListener("click", function () { close(false); });
+    okBtn.addEventListener("click", function () { close(true); });
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) close(false);
+    });
+    document.addEventListener("keydown", onKey);
+
+    actions.append(cancelBtn, okBtn);
+    box.append(title, msg, actions);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    cancelBtn.focus();
+  });
 }
 
 function splitList(text) {
@@ -96,10 +161,14 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   // 2. Render
-  function deleteItem(itemId) {
+  async function deleteItem(itemId) {
     const target = getCurrentPortfolio();
     if (!target) return;
-    if (!confirm("ต้องการลบ Item นี้ใช่หรือไม่?")) return;
+    const ok = await confirmDialog("ต้องการลบ Item นี้ใช่หรือไม่? การลบไม่สามารถย้อนกลับได้", {
+      title: "ลบ Item",
+      confirmText: "ลบ"
+    });
+    if (!ok) return;
     target.items = (target.items || []).filter(function (i) { return i.id !== itemId; });
     savePortfolios(portfolios);
     renderPortfolioView(target);
@@ -265,7 +334,11 @@ document.addEventListener("DOMContentLoaded", async function () {
   const resetBtn = document.getElementById("btn-reset-data");
   if (resetBtn) {
     resetBtn.addEventListener("click", async function () {
-      if (!confirm("Are you sure you want to reset all data to default samples?")) return;
+      const ok = await confirmDialog("ต้องการรีเซ็ตข้อมูลทั้งหมดกลับเป็นข้อมูลตัวอย่างใช่หรือไม่? ข้อมูลที่เพิ่มไว้จะหายทั้งหมด", {
+        title: "Reset Data",
+        confirmText: "รีเซ็ต"
+      });
+      if (!ok) return;
       try {
         portfolios = await fetchSamplePortfolios();
         savePortfolios(portfolios);
