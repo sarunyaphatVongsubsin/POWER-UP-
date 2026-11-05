@@ -1,37 +1,42 @@
-/* Layout: dark top bar, sidebar of portfolios, main column with profile, items, add-item form */
 
 :root {
-  --accent: #d87f19;         
-  --accent-dark: #9f2323;    
-  /* พื้นหลังแถบ navbar */
-  --ink: #0f0f0f;            
-  /* พื้นหลังเว็บ */
-  --paper: #f8f9fa;          
-  /* พื้นหลังการ์ด */
-  --panel: #ffffff;          
-  /* สีเส้นขอบ */
-  --line: #e9ecef;           
-  /* สีข้อความคำแนะนำ */
-  --muted: #6c757d; 
-  --secondary: #9ca6b0;
+  --accent: #f48fb1;        
+  --accent-dark: #e8739b;  
+  --accent-soft: #ffe3ec;  
+  --accent-soft-2: #ffcfdf; 
+  --ink: #6b4552;          
+  --paper: #fff5f8;         
+  --panel: #ffffff;         
+  --line: #fad4e0;          
+  --muted: #a28792;         
+  --secondary: #cdb5bf;
+  --lilac: #e6dcff;        
+  --shadow: 0 6px 16px -4px rgba(232, 115, 155, 0.22);
 }
 
 body {
-  background: var(--paper);
-  color: #212529;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 207, 223, 0.55) 0, transparent 38%),
+    radial-gradient(circle at 92% 90%, rgba(230, 220, 255, 0.50) 0, transparent 35%),
+    var(--paper);
+  background-attachment: fixed;
+  color: var(--ink);
   font-family: 'Noto Sans Thai', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* แต่งแถบ navbar ด้านบน */
+/* แถบ navbar ด้านบน */
 .app-nav {
-  background: var(--ink);
+  background: linear-gradient(90deg, #ffcfdf 0%, #ffb8d0 100%);
   padding-block: 0.75rem;
+  border-bottom: 3px solid #fff;
+  box-shadow: 0 4px 12px rgba(232, 115, 155, 0.25);
+  border-radius: 0 0 1.25rem 1.25rem;
 }
 
 .app-nav .navbar-brand {
-  color: #ffffff;
+  color: var(--ink);
   font-weight: 700;
-  letter-spacing: 0.02rem;
+  letter-spacing: 0.03rem;
 }
 
 .brand-sub {
@@ -39,13 +44,18 @@ body {
   opacity: 0.7;
 }
 
-/* แต่งการ์ด panel ฟอร์ม */
+/* การ์ด panel */
 .panel {
   background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+  border: 2px solid var(--line);
+  border-radius: 1.25rem;
+  padding: 1.35rem;
+  box-shadow: var(--shadow);
+}
+
+.panel h2,
+.panel h3 {
+  color: var(--ink);
 }
 
 .panel-title {
@@ -55,46 +65,210 @@ body {
   color: var(--ink);
 }
 
-/* สัญลักษณ์จำเป็นต้องกรอก (*) ที่เป็นสีแดงส้ม */
-.req { 
-  color: var(--accent); 
+/* สัญลักษณ์จำเป็นต้องกรอก (*) */
+.req {
+  color: #e8739b;
   font-weight: bold;
 }
 
-.hint { 
-  color: var(--muted); 
-  font-weight: 400; 
-  font-size: 0.8rem; 
+.hint {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.8rem;
 }
 
-/* ปุ่มหลัก สีส้มตามมอ */
+/* badge จำนวน portfolio */
+#portfolio-count {
+  background: var(--accent) !important;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35em 0.75em;
+  vertical-align: middle;
+  border-radius: 999px;
+}
+
+/* ปุ่มหลัก */
 .btn-accent {
   background: var(--accent);
-  border-color: var(--accent);
+  border: 2px solid var(--accent);
   color: #fff;
   font-weight: 600;
-  border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
-  transition: all 0.2s ease;
+  border-radius: 999px;
+  padding: 0.55rem 1.25rem;
+  box-shadow: 0 4px 0 #e0709a;
+  transition: all 0.15s ease;
 }
 
-.btn-accent:hover, 
+.btn-accent:hover,
 .btn-accent:focus {
   background: var(--accent-dark);
   border-color: var(--accent-dark);
   color: #fff;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #c95883;
 }
 
-/* แต่งขอบเรืองแสงเวลากดพิมพ์ในช่องกรอก */
+.btn-accent:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #c95883;
+}
+
+/* ช่องกรอก */
+.form-control {
+  border: 2px solid var(--line);
+  border-radius: 0.85rem;
+  background: #fffafc;
+  color: var(--ink);
+}
+
+.form-control::placeholder {
+  color: #ccb3bd;
+}
+
 .form-control:focus {
+  background: #fff;
   border-color: var(--accent);
-  box-shadow: 0 0 0 0.25rem rgba(216, 127, 25, 0.15);
+  box-shadow: 0 0 0 0.25rem rgba(244, 143, 177, 0.25);
 }
 
-#portfolio-count {
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 0.30em 0.65em;
-  vertical-align: middle;
+.form-label {
+  color: var(--ink);
+}
+
+/* รายการ portfolio ใน sidebar */
+.list-group-item.portfolio-item {
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-left: 5px solid transparent;
+  border-radius: 0.85rem !important;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.4rem;
+  background: #fffafc;
+  color: var(--ink);
+  transition: all 0.15s ease;
+}
+
+.list-group-item.portfolio-item:hover {
+  background: var(--accent-soft);
+  transform: translateX(3px);
+}
+
+.list-group-item.portfolio-item.active {
+  background: var(--accent-soft);
+  color: var(--ink);
+  border-color: var(--line);
+  border-left-color: var(--accent);
+  box-shadow: 0 3px 8px rgba(244, 143, 177, 0.25);
+}
+
+.portfolio-item small {
+  color: var(--muted);
+}
+
+/* โปรไฟล์ */
+.profile dt {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #d9608b;
+  margin-top: 0.75rem;
+}
+
+.profile dd {
+  margin-bottom: 0;
+  overflow-wrap: anywhere;
+}
+
+/* การ์ดรายการผลงาน */
+.item-card {
+  background: #fffafc;
+  border: 2px solid var(--line);
+  border-radius: 1rem;
+  padding: 1rem;
+  height: 100%;
+  min-width: 0;
+  transition: all 0.2s ease;
+}
+
+.item-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: var(--accent-soft-2);
+}
+
+.item-card h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.25rem;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+}
+
+.item-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* แท็ก skill */
+.skill-chip {
+  display: inline-block;
+  background: var(--accent-soft);
+  color: #a63d65;
+  border: 1px solid var(--accent-soft-2);
+  border-radius: 999px;
+  padding: 0.12rem 0.7rem;
+  font-size: 0.78rem;
+  margin: 0 0.25rem 0.25rem 0;
+}
+
+.reflection dt {
+  font-size: 0.78rem;
+  color: #d9608b;
+  margin-top: 0.5rem;
+}
+
+.reflection dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.evidence-list {
+  padding-left: 1.1rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* toast แจ้งเตือน */
+.toast-area {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: calc(100vw - 2rem);
+}
+
+.toast-msg {
+  background: #fff;
+  color: var(--ink);
+  border: 2px solid var(--accent);
+  padding: 0.65rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow);
+}
+
+.toast-msg.error {
+  background: #ffe3e0;
+  border-color: #ef8354;
+  color: #8a2b14;
+}
+
+@media (max-width: 575.98px) {
+  .app-nav .container-xl {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 }
