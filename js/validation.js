@@ -1,7 +1,13 @@
+
 function validatePortfolioData(data) {
   const errors = [];
 
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return ["Portfolio data must be an object"];
+  }
+
   const requiredFields = [
+    "portfolioId",
     "name",
     "whatIEnjoy",
     "whatIveTried",
@@ -16,6 +22,14 @@ function validatePortfolioData(data) {
 
   if (!Array.isArray(data.items)) {
     errors.push("Items must be an array");
+  } else {
+    data.items.forEach((item, index) => {
+      const itemErrors = validatePortfolioItemData(item);
+
+      itemErrors.forEach(error => {
+        errors.push(`Item ${index + 1}: ${error}`);
+      });
+    });
   }
 
   return errors;
@@ -23,6 +37,10 @@ function validatePortfolioData(data) {
 
 function validatePortfolioItemData(data) {
   const errors = [];
+
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return ["Portfolio item must be an object"];
+  }
 
   const requiredFields = [
     "id",
@@ -39,7 +57,7 @@ function validatePortfolioItemData(data) {
     }
   });
 
-  if (data.date) {
+  if (typeof data.date === "string" && data.date.trim()) {
     const datePattern = /^\d{4}-\d{2}-\d{2}$/;
     const date = new Date(data.date);
 
@@ -52,18 +70,43 @@ function validatePortfolioItemData(data) {
     }
   }
 
-  if (!Array.isArray(data.skills)) {
-    errors.push("Skills must be an array");
+  if (
+    !Array.isArray(data.skills) ||
+    !data.skills.every(skill => typeof skill === "string")
+  ) {
+    errors.push("Skills must be an array of strings");
+  }
+
+  if (!data.reflection || typeof data.reflection !== "object" || Array.isArray(data.reflection)) {
+    errors.push("Reflection must be an object");
+  } else {
+    const reflectionFields = [
+      "whatIDid",
+      "whatILearned",
+      "challenge",
+      "nextStep"
+    ];
+
+    reflectionFields.forEach(field => {
+      if (typeof data.reflection[field] !== "string") {
+        errors.push(`Reflection ${field} must be a string`);
+      }
+    });
   }
 
   if (!Array.isArray(data.evidence)) {
     errors.push("Evidence must be an array");
   } else {
     data.evidence.forEach(url => {
+      if (typeof url !== "string") {
+        errors.push("Evidence URL must be a string");
+        return;
+      }
+
       try {
         const parsedURL = new URL(url);
 
-        if (!["http:", "https:"].includes(parsedURL.protocol)) {
+        if (!["http:", "https:"].includes(parsedURL.protocol) || !parsedURL.hostname) {
           errors.push(`Invalid Evidence URL: ${url}`);
         }
       } catch {
