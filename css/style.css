@@ -366,3 +366,26 @@ body {
     }
   
  }
+
+ /* เพิ่มการมองเห็นเมื่อผู้ใช้กด Tab โฟกัสช่องกรอกข้อมูลหรือปุ่ม */
+input:focus, 
+textarea:focus, 
+select:focus, 
+button:focus {
+  outline: 3px solid #f48fb1; /* ปรับสีขอบตามโทนสีเว็บ */
+  outline-offset: 2px;
+  box-shadow: 0 0 0 0.2rem rgba(244, 143, 177, 0.25);
+}
+
+/* สำหรับหน้าจอมือถือ (ความกว้างไม่เกิน 768px) */
+@media (max-width: 768px) {
+  .container-xl {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  /* ปรับขนาดปุ่มให้กดง่ายขึ้นบนมือถือ */
+  .btn {
+    padding: 10px 16px;
+  }
+}
