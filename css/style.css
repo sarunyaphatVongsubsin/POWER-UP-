@@ -277,6 +277,7 @@ body {
 }
 
 /* Select */
+.form-select,
 .add-item-panel .form-select {
     border: 2px solid var(--line);
     border-radius: 0.85rem;
@@ -285,6 +286,7 @@ body {
     font-family: inherit;
 }
 
+.form-select:focus,
 .add-item-panel .form-select:focus {
     background-color: #fff;
     border-color: var(--accent);
@@ -352,6 +354,49 @@ body {
     gap: 12px;
 }
 
+.profile-header {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+}
+
+.profile-header #portfolio-select {
+    flex: 1 1 240px;
+    max-width: 340px;
+}
+
+.profile-item {
+    background: #fffafc;
+    border: 2px solid var(--line);
+    border-radius: 0.85rem;
+    padding: 0.85rem 1rem;
+}
+
+.profile-item-full {
+    grid-column: 1 / -1;
+}
+
+.profile-item small {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #d9608b;
+    margin-bottom: 0.35rem;
+}
+
+.profile-item p {
+    margin-bottom: 0;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
 /* Portfolio Items */
 .items-grid {
     display: grid;
@@ -361,10 +406,14 @@ body {
 
 /* Responsive */
 @media (max-width: 767.98px) {
+    .profile-panel,
     .items-grid {
         grid-template-columns: 1fr;
     }
-  
+
+    .profile-header #portfolio-select {
+        max-width: 100%;
+    }
  }
 
  /* เพิ่มการมองเห็นเมื่อผู้ใช้กด Tab โฟกัสช่องกรอกข้อมูลหรือปุ่ม */
