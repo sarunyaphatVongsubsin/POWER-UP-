@@ -1,0 +1,57 @@
+{
+  "portfolioId": "portfolio-2",
+  "name": "Thanawat Srisuk (Ton)",
+  "whatIEnjoy": "Solving algorithmic problems, automating repetitive workflows with Python, and exploring data visualization.",
+  "whatIveTried": "Python scripting, C programming, basic SQL queries, data cleaning with Pandas, and command-line Git.",
+  "whatImCuriousAbout": "Machine learning fundamentals, RESTful API design, Docker containers, and cloud deployment.",
+  "items": [
+    {
+      "id": "item-201",
+      "title": "Smart Study Schedule & Deadline Tracker",
+      "type": "Personal Project",
+      "date": "2026-08-28",
+      "role": "Solo Developer",
+      "description": "Built a lightweight command-line and web dashboard tool that parses course syllabi dates and generates weekly study reminders.",
+      "skills": [
+        "Python",
+        "JavaScript",
+        "JSON",
+        "Data Parsing"
+      ],
+      "reflection": {
+        "whatIDid": "Wrote a Python script to convert CSV deadline tables into structured JSON and rendered upcoming tasks on a clean web page.",
+        "whatILearned": "Learned how to handle date/time formatting across timezones and structure clean, reusable JSON schemas.",
+        "challenge": "Handling inconsistent date formats from different course syllabus documents without crashing the parser.",
+        "nextStep": "Integrate Google Calendar export (.ics) so reminders sync automatically to mobile devices."
+      },
+      "evidence": [
+        "https://github.com/example/study-deadline-tracker"
+      ]
+    },
+    {
+      "id": "item-202",
+      "title": "Intro to Git & Open Source Workshop",
+      "type": "Club Activity",
+      "date": "2026-10-03",
+      "role": "Workshop Co-Facilitator",
+      "description": "Co-organized a hands-on workshop for 40 first-year computer science students covering Git fundamentals, branching, and pull requests.",
+      "skills": [
+        "Git",
+        "GitHub",
+        "Public Speaking",
+        "Mentoring",
+        "Technical Documentation"
+      ],
+      "reflection": {
+        "whatIDid": "Prepared the starter repository with practice issues, wrote a step-by-step cheat sheet, and guided participants through resolving merge conflicts.",
+        "whatILearned": "Learned that explaining technical concepts to beginners requires clear visual diagrams and patience when troubleshooting environment setup.",
+        "challenge": "Helping students fix SSH key and credential manager issues across both Windows and macOS laptops during the live session.",
+        "nextStep": "Record short 5-minute video walkthroughs for common Git commands to share before future club workshops."
+      },
+      "evidence": [
+        "https://github.com/example/cs-club-git-workshop",
+        "https://example.com/git-workshop-slides"
+      ]
+    }
+  ]
+}

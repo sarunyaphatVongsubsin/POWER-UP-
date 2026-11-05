@@ -1,0 +1,59 @@
+{
+  "portfolioId": "portfolio-1",
+  "name": "Napat Wattanapong (Ploy)",
+  "whatIEnjoy": "Designing user-friendly web interfaces, building interactive frontend applications, and collaborating on creative student tech projects.",
+  "whatIveTried": "HTML5, CSS3, Bootstrap 5, Vanilla JavaScript, Git/GitHub workflow, and Figma UI prototyping.",
+  "whatImCuriousAbout": "React.js, TypeScript, accessible web design (WCAG), and full-stack development with Node.js.",
+  "items": [
+    {
+      "id": "item-101",
+      "title": "POWER UP! Learning Portfolio Web App",
+      "type": "Course Assignment",
+      "date": "2026-10-15",
+      "role": "Frontend Developer & UI Designer",
+      "description": "Developed a responsive single-page learning portfolio web application for CS100 using HTML5, Bootstrap 5, and vanilla JavaScript with localStorage persistence.",
+      "skills": [
+        "HTML5",
+        "CSS3",
+        "Bootstrap 5",
+        "JavaScript",
+        "Git"
+      ],
+      "reflection": {
+        "whatIDid": "Designed the pastel pink theme, structured the responsive layout with Bootstrap grid, and implemented form validation and localStorage state management.",
+        "whatILearned": "Learned how to manage structured JSON data in browser localStorage and coordinate Git branches with teammates without merge conflicts.",
+        "challenge": "Ensuring form inputs validated cleanly before saving and keeping the layout responsive on smaller mobile viewports.",
+        "nextStep": "Add search and filter capabilities by skill tags and support exporting portfolios as PDF or downloadable JSON files."
+      },
+      "evidence": [
+        "https://github.com/example/power-up-portfolio",
+        "https://example.com/power-up-demo"
+      ]
+    },
+    {
+      "id": "item-102",
+      "title": "Campus Sustainability Hackathon Prototype",
+      "type": "Competition",
+      "date": "2026-09-20",
+      "role": "UX Researcher & Prototyping Lead",
+      "description": "Created an interactive mobile prototype for tracking reusable cup rewards across campus cafes during a 48-hour student hackathon.",
+      "skills": [
+        "Figma",
+        "UX Research",
+        "Wireframing",
+        "Team Collaboration",
+        "Pitching"
+      ],
+      "reflection": {
+        "whatIDid": "Conducted quick interviews with 15 students, mapped user flows, and built a clickable high-fidelity prototype in Figma.",
+        "whatILearned": "Learned how to rapidly validate assumptions with real users and prioritize core features under strict time constraints.",
+        "challenge": "Balancing gamification features with a fast, frictionless QR scan checkout flow for busy coffee shop queues.",
+        "nextStep": "Build a working progressive web app (PWA) MVP and test it with one campus student-run cafe."
+      },
+      "evidence": [
+        "https://figma.com/file/example-campus-green-cup",
+        "https://example.com/hackathon-pitch-deck"
+      ]
+    }
+  ]
+}
