@@ -438,3 +438,142 @@ button:focus {
     padding: 10px 16px;
   }
 }
+/* ===== ตกแต่งการ์ด Portfolio Item ===== */
+.items-grid > p {
+  grid-column: 1 / -1;
+}
+
+.item-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 1.1rem 1.1rem 1rem;
+  box-shadow: 0 4px 12px -4px rgba(232, 115, 155, 0.18);
+}
+
+.item-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.item-type {
+  background: var(--lilac);
+  color: #6a4fb3;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.18rem 0.75rem;
+  border-radius: 999px;
+}
+
+.item-date {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.item-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.item-desc {
+  margin: 0.6rem 0 0.7rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.skill-list {
+  margin-bottom: 0.9rem;
+}
+
+/* reflection */
+.reflection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.reflection-block {
+  background: #fff5f8;
+  border: 1px solid #f48fb1;
+  border-radius: 0.9rem;
+  padding: 0.6rem 0.9rem;
+}
+
+.reflection-block:nth-child(even) {
+  background: #f6f1ff;
+  border-color: #b9a4f0;
+}
+
+.reflection-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #d9608b;
+  margin-bottom: 0.15rem;
+}
+
+
+.reflection-block:nth-child(even) .reflection-label {
+  color: #7a5fc4;
+}
+
+.reflection-text {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* evidence */
+.evidence-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.evidence-list {
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+}
+
+.evidence-list a {
+  color: #d9608b;
+  text-decoration: none;
+  border-bottom: 1px dashed var(--accent);
+}
+
+.evidence-list a:hover {
+  color: #a63d65;
+  border-bottom-style: solid;
+}
+
+/* ปุ่มลบ */
+.item-footer {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line);
+  text-align: right;
+}
+
+.btn-delete-item {
+  background: #fff;
+  color: #d9534f;
+  border: 2px solid #f5c2c0;
+  border-radius: 999px;
+  padding: 0.25rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.btn-delete-item:hover {
+  background: #ffe3e0;
+  border-color: #ef8354;
+  color: #8a2b14;
+}
