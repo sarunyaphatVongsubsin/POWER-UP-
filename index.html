@@ -92,33 +92,29 @@
 <section class="col-lg-8 main-column">
     <!-- Profile -->
 <div class="panel profile-panel" id="profile-panel">
-    <h2 id="profile-name">เลือก Portfolio</h2>
+    <div>
+        <h2 id="profile-name">เลือก Portfolio</h2>
+        <select id="portfolio-select" class="form-select mb-3">
+            <option value="" disabled selected>-- เลือก Portfolio --</option>
+        </select>
+    </div>
 
     <div class="mb-3">
         <small>WHAT I ENJOY</small>
-        <p id="profile-enjoy">-</p>
+        <p id="view-what-enjoy">-</p>
     </div>
 
     <div class="mb-3">
         <small>WHAT I'VE TRIED</small>
-        <p id="profile-tried">-</p>
+        <p id="view-what-tried">-</p>
     </div>
 
     <div>
         <small>WHAT I'M CURIOUS ABOUT</small>
-        <p id="profile-curious">-</p>
+        <p id="view-what-curious">-</p>
     </div>
 </div>
 
-<!-- Portfolio Items -->
-<div class="panel items-panel">
-    <h2 class="h5 fw-bold">
-        Portfolio Items
-        <span id="item-count" class="badge text-bg-secondary">0</span>
-    </h2>
-
-    <div id="items-list" class="items-grid"></div>
-</div>
             <!-- ฝั่งขวา - Add Portfolio Item -->
 <section class="col-lg-12">
 

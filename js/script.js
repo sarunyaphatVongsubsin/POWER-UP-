@@ -134,6 +134,81 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // 0.5 แสดงจำนวน Portfolio, ตัวเลือก Dropdown และข้อมูลรายละเอียด (Issue #11)
+  const portfolioCountEl = document.getElementById("portfolio-count");
+  const portfolioSelectEl = document.getElementById("portfolio-select");
+  const viewWhatEnjoyEl = document.getElementById("view-what-enjoy");
+  const viewWhatTriedEl = document.getElementById("view-what-tried");
+  const viewWhatCuriousEl = document.getElementById("view-what-curious");
+  const portfolioItemsCountEl = document.getElementById("portfolio-items-count");
+
+  function getPortfoliosFromStorage() {
+    try {
+      return JSON.parse(localStorage.getItem("portfolios")) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function renderPortfolioView(portfolio) {
+    if (!portfolio) {
+      if (viewWhatEnjoyEl) viewWhatEnjoyEl.textContent = "-";
+      if (viewWhatTriedEl) viewWhatTriedEl.textContent = "-";
+      if (viewWhatCuriousEl) viewWhatCuriousEl.textContent = "-";
+      if (portfolioItemsCountEl) portfolioItemsCountEl.textContent = "0";
+      return;
+    }
+    if (viewWhatEnjoyEl) viewWhatEnjoyEl.textContent = portfolio.whatIEnjoy || "-";
+    if (viewWhatTriedEl) viewWhatTriedEl.textContent = portfolio.whatIveTried || "-";
+    if (viewWhatCuriousEl) viewWhatCuriousEl.textContent = portfolio.whatImCuriousAbout || "-";
+    if (portfolioItemsCountEl) {
+      const itemsLength = Array.isArray(portfolio.items) ? portfolio.items.length : 0;
+      portfolioItemsCountEl.textContent = itemsLength;
+    }
+  }
+
+  const portfolios = getPortfoliosFromStorage();
+
+  if (portfolioCountEl) {
+    portfolioCountEl.textContent = portfolios.length;
+  }
+
+  if (portfolioSelectEl) {
+    portfolioSelectEl.innerHTML = '<option value="" disabled selected>-- เลือก Portfolio --</option>';
+    portfolios.forEach(function (p) {
+      const option = document.createElement("option");
+      option.value = p.portfolioId;
+      option.textContent = p.name;
+      portfolioSelectEl.appendChild(option);
+    });
+
+    const savedPortfolioId = localStorage.getItem("currentPortfolioId");
+    const initialSelectedPortfolio =
+      portfolios.find(function (p) {
+        return p.portfolioId === savedPortfolioId;
+      }) || portfolios[0] || null;
+
+    if (initialSelectedPortfolio) {
+      portfolioSelectEl.value = initialSelectedPortfolio.portfolioId;
+      localStorage.setItem("currentPortfolioId", initialSelectedPortfolio.portfolioId);
+      renderPortfolioView(initialSelectedPortfolio);
+    } else {
+      renderPortfolioView(null);
+    }
+
+    portfolioSelectEl.addEventListener("change", function (event) {
+      const selectedId = event.target.value;
+      const currentPortfolios = getPortfoliosFromStorage();
+      const selectedPortfolio = currentPortfolios.find(function (p) {
+        return p.portfolioId === selectedId;
+      });
+      if (selectedPortfolio) {
+        localStorage.setItem("currentPortfolioId", selectedPortfolio.portfolioId);
+      }
+      renderPortfolioView(selectedPortfolio);
+    });
+  }
+
   // 1. จัดการฟอร์มสร้าง Portfolio ด้านบน (ถ้ามี)
   const portfolioForm = document.getElementById('portfolio-form');
   if (portfolioForm) {
