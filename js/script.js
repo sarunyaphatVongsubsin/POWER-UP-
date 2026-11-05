@@ -218,8 +218,41 @@ document.addEventListener('DOMContentLoaded', function () {
         event.stopPropagation();
       } else {
         event.preventDefault();
-        // ตัวอย่างการแสดงสถานะเมื่อบันทึกสำเร็จ
+
+        const newPortfolio = {
+          portfolioId: "port-" + Date.now(),
+          name: document.getElementById('p-name').value.trim(),
+          whatIEnjoy: document.getElementById('p-enjoy').value.trim(),
+          whatIveTried: document.getElementById('p-tried').value.trim(),
+          whatImCuriousAbout: document.getElementById('p-curious').value.trim(),
+          items: []
+        };
+
+        const currentPortfolios = getPortfoliosFromStorage();
+        currentPortfolios.push(newPortfolio);
+        localStorage.setItem("portfolios", JSON.stringify(currentPortfolios));
+        localStorage.setItem("currentPortfolioId", newPortfolio.portfolioId);
+
+        if (portfolioCountEl) {
+          portfolioCountEl.textContent = currentPortfolios.length;
+        }
+
+        if (portfolioSelectEl) {
+          const option = document.createElement("option");
+          option.value = newPortfolio.portfolioId;
+          option.textContent = newPortfolio.name;
+          portfolioSelectEl.appendChild(option);
+          portfolioSelectEl.value = newPortfolio.portfolioId;
+        }
+
+        renderPortfolioView(newPortfolio);
+
+        // ตัวอย่างการแสดงสถานะเมื่อบันทึกสำเร็จๆ
         alert('บันทึกข้อมูล Portfolio สำเร็จเรียบร้อยแล้ว!');
+
+        portfolioForm.reset();
+        portfolioForm.classList.remove('was-validated');
+        return;
       }
       portfolioForm.classList.add('was-validated');
     });
