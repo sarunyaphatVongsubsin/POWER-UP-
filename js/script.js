@@ -41,3 +41,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 });
+
+// ตัวอย่างเมื่อบันทึกสำเร็จ
+const statusMessage = document.getElementById('save-status-message');
+if (statusMessage) {
+  statusMessage.textContent = 'บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว!';
+  statusMessage.className = 'alert alert-success mt-3'; // ใช้คลาสแจ้งเตือนสีเขียวของ Bootstrap
+  statusMessage.style.display = 'block';
+  
+  // ซ่อนข้อความแจ้งเตือนอัตโนมัติหลังผ่านไป 3 วินาที
+  setTimeout(() => {
+    statusMessage.style.display = 'none';
+  }, 3000);
+}
