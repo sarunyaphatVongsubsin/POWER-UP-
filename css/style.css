@@ -266,8 +266,74 @@ body {
   color: #8a2b14;
 }
 
+.add-item-panel {
+    height: 100%;
+    min-width: 0;
+}
+
+.add-item-panel h2,
+.add-item-panel h3 {
+    color: var(--ink);
+}
+
+/* Select */
+.add-item-panel .form-select {
+    border: 2px solid var(--line);
+    border-radius: 0.85rem;
+    background-color: #fffafc;
+    color: var(--ink);
+    font-family: inherit;
+}
+
+.add-item-panel .form-select:focus {
+    background-color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.25rem rgba(244, 143, 177, 0.25);
+}
+
+/* Textarea */
+.add-item-panel textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Input และ Textarea */
+.add-item-panel .form-control,
+.add-item-panel .form-select {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Hint */
+.add-item-panel .hint {
+    display: inline-block;
+    margin-top: 5px;
+}
+
+/* Action Buttons */
+.add-item-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid var(--line);
+}
+
+/* Responsive */
 @media (max-width: 575.98px) {
-  .app-nav .container-xl {
+    .add-item-panel {
+        padding: 1rem;
+    }
+
+    .add-item-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .add-item-actions button {
+        width: 100%;
+    }
+    .app-nav .container-xl {
     flex-wrap: wrap;
     gap: 0.5rem;
   }
