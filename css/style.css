@@ -1,17 +1,30 @@
-
 :root {
-  --accent: #f48fb1;        
-  --accent-dark: #e8739b;  
-  --accent-soft: #ffe3ec;  
-  --accent-soft-2: #ffcfdf; 
-  --ink: #6b4552;          
-  --paper: #fff5f8;         
-  --panel: #ffffff;         
-  --line: #fad4e0;          
-  --muted: #a28792;         
-  --secondary: #cdb5bf;
-  --lilac: #e6dcff;        
-  --shadow: 0 6px 16px -4px rgba(232, 115, 155, 0.22);
+  --accent: #d81b60;
+  --accent-dark: #ad1457;
+  --accent-soft: #fce4ec;
+  --accent-soft-2: #f8bbd0;
+  
+  --ink: #2b1922;
+  --paper: #f7f4f6;
+  --panel: #ffffff;
+  --line: #e5d8df;
+  --muted: #6c5863;
+  --secondary: #880e4f;
+  --lilac: #ede7f6;
+  --shadow: 0 8px 24px -4px rgba(136, 14, 79, 0.14);
+
+  /* === Design Tokens (issue #21) === */
+  --font-main: 'Noto Sans Thai', system-ui, -apple-system, sans-serif;
+  --fs-base: 1rem;
+  --fs-sm: 0.875rem;
+  --fs-lg: 1.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --radius-sm: 0.65rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-pill: 999px;
 }
 
 body {
@@ -21,34 +34,40 @@ body {
     var(--paper);
   background-attachment: fixed;
   color: var(--ink);
-  font-family: 'Noto Sans Thai', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-main);
+  font-size: var(--fs-base);
 }
 
 /* แถบ navbar ด้านบน */
 .app-nav {
-  background: linear-gradient(90deg, #ffcfdf 0%, #ffb8d0 100%);
-  padding-block: 0.75rem;
-  border-bottom: 3px solid #fff;
-  box-shadow: 0 4px 12px rgba(232, 115, 155, 0.25);
-  border-radius: 0 0 1.25rem 1.25rem;
+  background: linear-gradient(135deg, #c12076 0%, #ea397a 100%);
+  padding-block: 0.85rem;
+  border: 2px solid #f48fb1;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 20px rgba(136, 14, 79, 0.25);
+  width: 100%;
+  margin-top: var(--space-md);
 }
 
 .app-nav .navbar-brand {
-  color: var(--ink);
+  color: #ffffff;
+  font-size: 1.75rem;
   font-weight: 700;
-  letter-spacing: 0.03rem;
+  letter-spacing: 0.04rem;
+  white-space: normal;
+  line-height: 1.2;
 }
 
 .brand-sub {
   font-weight: 400;
-  opacity: 0.7;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 /* การ์ด panel */
 .panel {
   background: var(--panel);
   border: 2px solid var(--line);
-  border-radius: 1.25rem;
+  border-radius: var(--radius-lg);
   padding: 1.35rem;
   box-shadow: var(--shadow);
 }
@@ -61,13 +80,13 @@ body {
 .panel-title {
   font-size: 1.1rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-md);
   color: var(--ink);
 }
 
 /* สัญลักษณ์จำเป็นต้องกรอก (*) */
 .req {
-  color: #e8739b;
+  color: var(--accent);
   font-weight: bold;
 }
 
@@ -80,23 +99,23 @@ body {
 /* badge จำนวน portfolio */
 #portfolio-count {
   background: var(--accent) !important;
-  color: #fff;
+  color: #ffffff;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.35em 0.75em;
   vertical-align: middle;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 /* ปุ่มหลัก */
 .btn-accent {
   background: var(--accent);
   border: 2px solid var(--accent);
-  color: #fff;
+  color: #ffffff;
   font-weight: 600;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.55rem 1.25rem;
-  box-shadow: 0 4px 0 #e0709a;
+  box-shadow: 0 4px 0 var(--accent-soft-2);
   transition: all 0.15s ease;
 }
 
@@ -104,14 +123,14 @@ body {
 .btn-accent:focus {
   background: var(--accent-dark);
   border-color: var(--accent-dark);
-  color: #fff;
+  color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 #c95883;
+  box-shadow: 0 6px 0 var(--accent-soft-2);
 }
 
 .btn-accent:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 #c95883;
+  box-shadow: 0 1px 0 var(--accent-soft-2);
 }
 
 /* ช่องกรอก */
@@ -123,7 +142,7 @@ body {
 }
 
 .form-control::placeholder {
-  color: #ccb3bd;
+  color: var(--muted);
 }
 
 .form-control:focus {
@@ -171,7 +190,7 @@ body {
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #d9608b;
+  color: var(--accent);
   margin-top: 0.75rem;
 }
 
@@ -184,8 +203,8 @@ body {
 .item-card {
   background: #fffafc;
   border: 2px solid var(--line);
-  border-radius: 1rem;
-  padding: 1rem;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
   height: 100%;
   min-width: 0;
   transition: all 0.2s ease;
@@ -213,18 +232,19 @@ body {
 .skill-chip {
   display: inline-block;
   background: var(--accent-soft);
-  color: #a63d65;
+  color: var(--accent-dark);
   border: 1px solid var(--accent-soft-2);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.12rem 0.7rem;
   font-size: 0.78rem;
+  font-weight: 600;
   margin: 0 0.25rem 0.25rem 0;
 }
 
 .reflection dt {
   font-size: 0.78rem;
-  color: #d9608b;
-  margin-top: 0.5rem;
+  color: var(--accent);
+  margin-top: var(--space-sm);
 }
 
 .reflection dd {
@@ -241,12 +261,12 @@ body {
 /* toast แจ้งเตือน */
 .toast-area {
   position: fixed;
-  right: 1rem;
-  bottom: 1rem;
+  right: var(--space-md);
+  bottom: var(--space-md);
   z-index: 1080;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-sm);
   max-width: calc(100vw - 2rem);
 }
 
@@ -255,9 +275,11 @@ body {
   color: var(--ink);
   border: 2px solid var(--accent);
   padding: 0.65rem 1.1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
   box-shadow: var(--shadow);
+  animation: toast-in 0.25s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .toast-msg.error {
@@ -266,178 +288,150 @@ body {
   color: #8a2b14;
 }
 
+.toast-msg.warning {
+  background: #fff7e0;
+  border-color: #f2b84b;
+  color: #7a5200;
+}
+
+.toast-msg.hide {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .add-item-panel {
-    height: 100%;
-    min-width: 0;
+  min-width: 0;
 }
 
 .add-item-panel h2,
 .add-item-panel h3 {
-    color: var(--ink);
+  color: var(--ink);
 }
 
 /* Select */
 .form-select,
 .add-item-panel .form-select {
-    border: 2px solid var(--line);
-    border-radius: 0.85rem;
-    background-color: #fffafc;
-    color: var(--ink);
-    font-family: inherit;
+  border: 2px solid var(--line);
+  border-radius: 0.85rem;
+  background-color: #fffafc;
+  color: var(--ink);
+  font-family: inherit;
 }
 
 .form-select:focus,
 .add-item-panel .form-select:focus {
-    background-color: #fff;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 0.25rem rgba(244, 143, 177, 0.25);
+  background-color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.25rem rgba(244, 143, 177, 0.25);
 }
 
 /* Textarea */
 .add-item-panel textarea {
-    resize: vertical;
-    min-height: 80px;
+  resize: vertical;
+  min-height: 80px;
 }
 
 /* Input และ Textarea */
 .add-item-panel .form-control,
 .add-item-panel .form-select {
-    width: 100%;
-    min-width: 0;
+  width: 100%;
+  min-width: 0;
 }
 
 /* Hint */
 .add-item-panel .hint {
-    display: inline-block;
-    margin-top: 5px;
+  display: inline-block;
+  margin-top: 5px;
 }
 
 /* Action Buttons */
 .add-item-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-    border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid var(--line);
 }
 
-/* Responsive */
-@media (max-width: 575.98px) {
-    .add-item-panel {
-        padding: 1rem;
-    }
-
-    .add-item-actions {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .add-item-actions button {
-        width: 100%;
-    }
-    .app-nav .container-xl {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-}
 /* จัดเรียงเนื้อหาฝั่งขวา */
 .main-column {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 /* Profile */
 .profile-panel {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .profile-header {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--line);
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 .profile-header #portfolio-select {
-    flex: 1 1 240px;
-    max-width: 340px;
+  flex: 1 1 240px;
+  max-width: 340px;
 }
 
 .profile-item {
-    background: #fffafc;
-    border: 2px solid var(--line);
-    border-radius: 0.85rem;
-    padding: 0.85rem 1rem;
+  background: #fffafc;
+  border: 2px solid var(--line);
+  border-radius: 0.85rem;
+  padding: 0.85rem var(--space-md);
 }
 
 .profile-item-full {
-    grid-column: 1 / -1;
+  grid-column: 1 / -1;
 }
 
 .profile-item small {
-    display: block;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #d9608b;
-    margin-bottom: 0.35rem;
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
 }
 
 .profile-item p {
-    margin-bottom: 0;
-    color: var(--ink);
-    overflow-wrap: anywhere;
+  margin-bottom: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
 }
 
 /* Portfolio Items */
 .items-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-/* Responsive */
-@media (max-width: 767.98px) {
-    .profile-panel,
-    .items-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .profile-header #portfolio-select {
-        max-width: 100%;
-    }
- }
-
- /* เพิ่มการมองเห็นเมื่อผู้ใช้กด Tab โฟกัสช่องกรอกข้อมูลหรือปุ่ม */
+/* เพิ่มการมองเห็นเมื่อผู้ใช้กด Tab โฟกัสช่องกรอกข้อมูลหรือปุ่ม */
 input:focus, 
 textarea:focus, 
 select:focus, 
 button:focus {
-  outline: 3px solid #f48fb1; /* ปรับสีขอบตามโทนสีเว็บ */
+  outline: 3px solid #f48fb1;
   outline-offset: 2px;
   box-shadow: 0 0 0 0.2rem rgba(244, 143, 177, 0.25);
 }
 
-/* สำหรับหน้าจอมือถือ (ความกว้างไม่เกิน 768px) */
-@media (max-width: 768px) {
-  .container-xl {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-  
-  /* ปรับขนาดปุ่มให้กดง่ายขึ้นบนมือถือ */
-  .btn {
-    padding: 10px 16px;
-  }
-}
 /* ===== ตกแต่งการ์ด Portfolio Item ===== */
 .items-grid > p {
   grid-column: 1 / -1;
@@ -448,7 +442,7 @@ button:focus {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 1.1rem 1.1rem 1rem;
+  padding: 1.1rem 1.1rem var(--space-md);
   box-shadow: 0 4px 12px -4px rgba(232, 115, 155, 0.18);
 }
 
@@ -463,11 +457,11 @@ button:focus {
 
 .item-type {
   background: var(--lilac);
-  color: #6a4fb3;
+  color: #5b3fa3;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.18rem 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .item-date {
@@ -494,7 +488,7 @@ button:focus {
 .reflection {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-sm);
   margin-bottom: 0.9rem;
 }
 
@@ -513,13 +507,12 @@ button:focus {
 .reflection-label {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #d9608b;
+  color: var(--accent-dark);
   margin-bottom: 0.15rem;
 }
 
-
 .reflection-block:nth-child(even) .reflection-label {
-  color: #7a5fc4;
+  color: #6346b0;
 }
 
 .reflection-text {
@@ -538,18 +531,19 @@ button:focus {
 }
 
 .evidence-list {
-  margin-bottom: 1rem;
-  font-size: 0.88rem;
+  margin-bottom: var(--space-md);
+  font-size: var(--fs-sm);
 }
 
 .evidence-list a {
-  color: #d9608b;
+  color: var(--accent-dark);
+  font-weight: 500;
   text-decoration: none;
-  border-bottom: 1px dashed var(--accent);
+  border-bottom: 1px dashed var(--accent-dark);
 }
 
 .evidence-list a:hover {
-  color: #a63d65;
+  color: var(--secondary);
   border-bottom-style: solid;
 }
 
@@ -563,9 +557,9 @@ button:focus {
 
 .btn-delete-item {
   background: #fff;
-  color: #d9534f;
+  color: #c9302c;
   border: 2px solid #f5c2c0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.25rem 0.95rem;
   font-size: 0.82rem;
   font-weight: 600;
@@ -578,10 +572,6 @@ button:focus {
   color: #8a2b14;
 }
 
-/* ให้กล่อง Portfolio Items ขยายเต็มพื้นที่ที่เหลือ */
-.items-panel {
-  flex: 1 1 auto;
-}
 .items-panel {
   display: flex;
   flex-direction: column;
@@ -595,29 +585,6 @@ button:focus {
   text-align: center;
 }
 
-/* ===== Toast มุมขวาล่าง ===== */
-.toast-msg {
-  border-radius: 1rem;
-  animation: toast-in 0.25s ease;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.toast-msg.warning {
-  background: #fff7e0;
-  border-color: #f2b84b;
-  color: #7a5200;
-}
-
-.toast-msg.hide {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-@keyframes toast-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
 /* ===== หน้าต่างยืนยัน ===== */
 .confirm-overlay {
   position: fixed;
@@ -626,7 +593,7 @@ button:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--space-md);
   background: rgba(107, 69, 82, 0.35);
   animation: confirm-fade 0.15s ease;
 }
@@ -636,7 +603,7 @@ button:focus {
   max-width: 380px;
   background: var(--panel);
   border: 2px solid var(--line);
-  border-radius: 1.25rem;
+  border-radius: var(--radius-lg);
   padding: 1.4rem;
   box-shadow: var(--shadow);
   animation: toast-in 0.2s ease;
@@ -646,7 +613,7 @@ button:focus {
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--ink);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-sm);
 }
 
 .confirm-message {
@@ -663,7 +630,7 @@ button:focus {
 
 .btn-confirm-cancel,
 .btn-confirm-ok {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.4rem 1.2rem;
   font-weight: 600;
   font-size: 0.9rem;
@@ -694,4 +661,66 @@ button:focus {
 @keyframes confirm-fade {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+/* สลับข้อความบนปุ่มพับเก็บ portfolio items อัตโนมัติ */
+.toggle-items-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.toggle-items-btn[aria-expanded="true"] .when-closed,
+.toggle-items-btn[aria-expanded="false"] .when-opened {
+  display: none;
+}
+
+.items-panel:has(.toggle-items-btn[aria-expanded="false"]) .d-flex.mb-3 {
+  margin-bottom: 0 !important;
+}
+
+/* ===== Responsive ===== */
+/* แท็บเล็ต (~768px) */
+@media (max-width: 767.98px) {
+  .container-xl {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .profile-panel,
+  .items-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-header #portfolio-select {
+    max-width: 100%;
+  }
+
+  .btn:not(.btn-sm) {
+    padding: 10px 16px;
+  }
+}
+
+/* มือถือ (~375px) */
+@media (max-width: 575.98px) {
+  .app-nav .navbar-brand {
+    font-size: 1.5rem;
+  }
+
+  .brand-sub {
+    display: block;
+    font-size: 0.85rem;
+  }
+
+  .add-item-panel {
+    padding: var(--space-md);
+  }
+
+  .add-item-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .add-item-actions button {
+    width: 100%;
+  }
 }
