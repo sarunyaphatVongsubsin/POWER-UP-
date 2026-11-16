@@ -84,6 +84,7 @@ body {
   color: #ffffff;
   border-color: #b02a37;
 }
+
 /* การ์ด panel */
 .panel {
   background: var(--panel);
@@ -442,6 +443,7 @@ body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  align-items: start;
 }
 
 /* เพิ่มการมองเห็นเมื่อผู้ใช้กด Tab โฟกัสช่องกรอกข้อมูลหรือปุ่ม */
@@ -504,6 +506,12 @@ button:focus {
 
 .skill-list {
   margin-bottom: 0.9rem;
+}
+
+/* ส่วนรายละเอียดเพิ่มเติม (กดปุ่มดูรายละเอียดเพื่อเปิด/ปิด) */
+.item-details {
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--line);
 }
 
 /* reflection */
@@ -569,12 +577,33 @@ button:focus {
   border-bottom-style: solid;
 }
 
-/* ปุ่มลบ */
+/* ปุ่มดูรายละเอียด + ปุ่มลบ ด้านล่างการ์ด */
 .item-footer {
   margin-top: auto;
   padding-top: 0.75rem;
   border-top: 1px dashed var(--line);
-  text-align: right;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-detail-item {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  border: 2px solid var(--accent-soft-2);
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.btn-detail-item:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
 }
 
 .btn-delete-item {
@@ -605,6 +634,56 @@ button:focus {
   align-items: center;
   justify-content: center;
   text-align: center;
+}
+
+/* ===== Issue #22: Disabled States, Error Feedback & Empty State ===== */
+.form-control:disabled,
+.form-select:disabled,
+textarea:disabled {
+  background-color: #f0e8ec;
+  border-color: var(--line);
+  color: var(--muted);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn:disabled,
+.btn-accent:disabled {
+  background-color: #e5d8df;
+  border-color: #e5d8df;
+  color: var(--muted);
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.invalid-feedback {
+  color: #c92a3e;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-top: 0.35rem;
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: #dc3545;
+  background-color: #fff8f9;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  background: #fffafc;
+  border: 2px dashed var(--accent-soft-2);
+  border-radius: var(--radius-md);
+  padding: 2rem 1.25rem;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.6rem;
 }
 
 /* ===== หน้าต่างยืนยัน ===== */
@@ -745,4 +824,78 @@ button:focus {
   .add-item-actions button {
     width: 100%;
   }
+}
+
+/* =========================================================
+   Portfolio Item Card & Expandable Details (Issue #22)
+   ========================================================= */
+
+/* ตัวการ์ดหลักของแต่ละ Item */
+.item-card {
+  border: 1px solid #e9d8e4;
+  border-radius: 1rem;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(214, 51, 132, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.item-card:hover {
+  transform: translateY(-2px);
+  border-color: #e685b5;
+  box-shadow: 0 8px 20px rgba(214, 51, 132, 0.12);
+}
+
+/* ป้ายประเภท (Type Badge) */
+.item-type-badge {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+}
+
+/* แท็กทักษะ (Skill Tags) */
+.skill-tag {
+  display: inline-block;
+  background-color: #fff0f6;
+  color: #c2185b;
+  border: 1px solid #f8bbd0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+}
+
+/* ปุ่มดูรายละเอียด (Show More / Collapse Toggle) */
+.btn-item-detail {
+  color: #d63384;
+  border: 1px solid #f3b8d4;
+  background-color: #fff8fb;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.3rem 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn-item-detail:hover {
+  background-color: #d63384;
+  border-color: #d63384;
+  color: #ffffff;
+}
+
+/* กล่อง Reflection ด้านในตอนกางรายละเอียด  */
+.reflection-box {
+  background-color: #fdf8fb;
+  border: none;
+  border-left: 3px solid #e685b5;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.reflection-box.is-purple {
+  background-color: #f8f5ff;
+  border-left-color: #8b5cf6;
 }

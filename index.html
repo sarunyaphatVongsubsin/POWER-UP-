@@ -139,7 +139,11 @@
 
                     <div class="collapse show" id="portfolio-items-collapse">
                         <div id="portfolio-items-list" class="items-grid">
-                            <p class="text-muted mb-0">ยังไม่มี Item ใน Portfolio นี้</p>
+                            <div class="empty-state">
+                                <h3 class="h5 fw-bold mb-1">ยังไม่มีผลงานใน Portfolio นี้</h3>
+                                <p class="text-muted small mb-3">เริ่มต้นบันทึกการเรียนรู้และโปรเจกต์แรกของคุณได้เลย</p>
+                                <a href="#item-title" class="btn btn-accent btn-sm">+ Add First Item</a>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -153,7 +157,7 @@
                         </p>
                     </div>
 
-                    <form id="item-form">
+                    <form id="item-form" novalidate>
                         <div class="row g-3">
                             <!-- Title -->
                             <div class="col-12">
@@ -162,6 +166,7 @@
                                 </label>
                                 <input type="text" class="form-control" id="item-title" name="title"
                                     placeholder="ชื่อผลงาน" required>
+                                <div class="invalid-feedback">Please enter item title</div>
                             </div>
 
                             <!-- Type -->
@@ -178,6 +183,7 @@
                                     <option value="Competition">Competition</option>
                                     <option value="Other">Other</option>
                                 </select>
+                                <div class="invalid-feedback">Please select item type</div>
                             </div>
 
                             <!-- Date -->
@@ -186,6 +192,7 @@
                                     Date <span class="req">*</span>
                                 </label>
                                 <input type="date" class="form-control" id="item-date" name="date" required>
+                                <div class="invalid-feedback">Please select a date</div>
                             </div>
 
                             <!-- Role -->
@@ -195,6 +202,7 @@
                                 </label>
                                 <input type="text" class="form-control" id="item-role" name="role"
                                     placeholder="หน้าที่หรือบทบาทที่รับผิดชอบ" required>
+                                <div class="invalid-feedback">Please enter your role</div>
                             </div>
 
                             <!-- Skills -->
@@ -205,6 +213,7 @@
                                 <input type="text" class="form-control" id="item-skills" name="skills"
                                     placeholder="HTML, CSS, JavaScript" required>
                                 <small class="hint">คั่นแต่ละทักษะด้วยเครื่องหมาย ,</small>
+                                <div class="invalid-feedback">Please enter at least one skill</div>
                             </div>
 
                             <!-- Description -->
@@ -214,6 +223,7 @@
                                 </label>
                                 <textarea class="form-control" id="item-description" name="description" rows="3"
                                     placeholder="อธิบายรายละเอียดของผลงาน" required></textarea>
+                                <div class="invalid-feedback">Please enter description</div>
                             </div>
 
                             <!-- Reflection -->
@@ -232,6 +242,7 @@
                                 </label>
                                 <textarea class="form-control" id="item-what-did" name="whatIDid" rows="3"
                                     placeholder="สิ่งที่ได้ลงมือทำ" required></textarea>
+                                <div class="invalid-feedback">Please enter what you did</div>
                             </div>
 
                             <!-- What I learned -->
@@ -241,6 +252,7 @@
                                 </label>
                                 <textarea class="form-control" id="item-what-learned" name="whatILearned" rows="3"
                                     placeholder="สิ่งที่ได้เรียนรู้" required></textarea>
+                                <div class="invalid-feedback">Please enter what you learned</div>
                             </div>
 
                             <!-- Challenge -->
@@ -250,6 +262,7 @@
                                 </label>
                                 <textarea class="form-control" id="item-challenge" name="challenge" rows="3"
                                     placeholder="ปัญหาหรืออุปสรรคที่พบ" required></textarea>
+                                <div class="invalid-feedback">Please enter challenge</div>
                             </div>
 
                             <!-- Next step -->
@@ -259,6 +272,7 @@
                                 </label>
                                 <textarea class="form-control" id="item-next-step" name="nextStep" rows="3"
                                     placeholder="สิ่งที่ต้องการพัฒนาต่อ" required></textarea>
+                                <div class="invalid-feedback">Please enter next step</div>
                             </div>
 
                             <!-- Evidence -->
@@ -271,6 +285,7 @@
                                 <small class="hint">
                                     ใส่ลิงก์หลักฐานผลงาน โดยแยกแต่ละลิงก์ด้วยการขึ้นบรรทัดใหม่
                                 </small>
+                                <div class="invalid-feedback">Please enter at least one valid URL</div>
                             </div>
                         </div>
 
