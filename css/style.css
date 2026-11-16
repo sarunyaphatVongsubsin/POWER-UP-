@@ -63,6 +63,27 @@ body {
   color: rgba(255, 255, 255, 0.92);
 }
 
+/* ปุ่ม Reset Data บน Navbar */
+#btn-reset-data {
+  background-color: #ffffff;
+  color: #dc3545;
+  border-color: #ffffff;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+#btn-reset-data:hover,
+#btn-reset-data:focus {
+  background-color: #b70650;
+  color: #ffffff;
+  border-color: #b70650;
+}
+
+#btn-reset-data:active {
+  background-color: #b02a37;
+  color: #ffffff;
+  border-color: #b02a37;
+}
 /* การ์ด panel */
 .panel {
   background: var(--panel);
@@ -96,8 +117,9 @@ body {
   font-size: 0.8rem;
 }
 
-/* badge จำนวน portfolio */
-#portfolio-count {
+/* badge จำนวน portfolio และ portfolio items */
+#portfolio-count,
+#portfolio-items-count {
   background: var(--accent) !important;
   color: #ffffff;
   font-size: 0.75rem;
