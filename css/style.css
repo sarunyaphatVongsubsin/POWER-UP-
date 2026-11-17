@@ -1,19 +1,20 @@
 :root {
-  --accent: #d81b60;
-  --accent-dark: #ad1457;
-  --accent-soft: #fce4ec;
-  --accent-soft-2: #f8bbd0;
+  /* ปรับโทนสีให้พาสเทลและละมุนขึ้น แต่ยังคงโทนเดิมและอ่านง่าย */
+  --accent: #d43b7a;       /* ปรับสีชมพูเข้มให้ซอฟต์ลงนิดหน่อย อ่านง่ายสบายตา */
+  --accent-dark: #ab225e;  /* ชมพูเข้มสำหรับสถานะ Hover */
+  --accent-soft: #fae1ed;  /* ชมพูพาสเทลอ่อนละมุน */
+  --accent-soft-2: #f4b8d4;
   
-  --ink: #2b1922;
-  --paper: #f7f4f6;
+  --ink: #321f29;          /* สีตัวหนังสือเข้มขึ้นเล็กน้อยเพื่อให้ตัดกับพื้นหลัง อ่านง่ายชัดเจน */
+  --paper: #fbf6f9;        /* พื้นหลังเว็บโทนพาสเทลอมชมพูจางๆ */
   --panel: #ffffff;
-  --line: #e5d8df;
-  --muted: #6c5863;
-  --secondary: #880e4f;
-  --lilac: #ede7f6;
-  --shadow: 0 8px 24px -4px rgba(136, 14, 79, 0.14);
+  --line: #ecd5e2;         /* เส้นขอบสีพาสเทลอ่อนๆ */
+  --muted: #79616e;        /* สีข้อความรอง */
+  --secondary: #961c58;
+  --lilac: #f3effc;        /* ม่วงพาสเทลอ่อน */
+  --shadow: 0 8px 24px -4px rgba(212, 59, 122, 0.12);
 
-  /* === Design Tokens (issue #21) === */
+  /* === Design Tokens === */
   --font-main: 'Noto Sans Thai', system-ui, -apple-system, sans-serif;
   --fs-base: 1rem;
   --fs-sm: 0.875rem;
@@ -21,16 +22,16 @@
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
-  --radius-sm: 0.65rem;
-  --radius-md: 1rem;
-  --radius-lg: 1.25rem;
+  --radius-sm: 0.75rem;
+  --radius-md: 1.15rem;
+  --radius-lg: 1.5rem;
   --radius-pill: 999px;
 }
 
 body {
   background:
-    radial-gradient(circle at 12% 8%, rgba(255, 207, 223, 0.55) 0, transparent 38%),
-    radial-gradient(circle at 92% 90%, rgba(230, 220, 255, 0.50) 0, transparent 35%),
+    radial-gradient(circle at 12% 8%, rgba(255, 212, 228, 0.6) 0, transparent 38%),
+    radial-gradient(circle at 92% 90%, rgba(235, 225, 255, 0.5) 0, transparent 35%),
     var(--paper);
   background-attachment: fixed;
   color: var(--ink);
@@ -40,11 +41,11 @@ body {
 
 /* แถบ navbar ด้านบน */
 .app-nav {
-  background: linear-gradient(135deg, #c12076 0%, #ea397a 100%);
+  background: linear-gradient(135deg, #d84888 0%, #eb689f 100%);
   padding-block: 0.85rem;
-  border: 2px solid #f48fb1;
+  border: 2px solid #f8bbd0;
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 20px rgba(136, 14, 79, 0.25);
+  box-shadow: 0 8px 20px rgba(216, 72, 136, 0.2);
   width: 100%;
   margin-top: var(--space-md);
 }
@@ -66,7 +67,7 @@ body {
 /* ปุ่ม Reset Data บน Navbar */
 #btn-reset-data {
   background-color: #ffffff;
-  color: #dc3545;
+  color: #e57373;
   border-color: #ffffff;
   font-weight: 600;
   transition: all 0.15s ease;
@@ -74,15 +75,15 @@ body {
 
 #btn-reset-data:hover,
 #btn-reset-data:focus {
-  background-color: #b70650;
+  background-color: #d32f2f;
   color: #ffffff;
-  border-color: #b70650;
+  border-color: #d32f2f;
 }
 
 #btn-reset-data:active {
-  background-color: #b02a37;
+  background-color: #c62828;
   color: #ffffff;
-  border-color: #b02a37;
+  border-color: #c62828;
 }
 
 /* การ์ด panel */
@@ -160,7 +161,7 @@ body {
 .form-control {
   border: 2px solid var(--line);
   border-radius: 0.85rem;
-  background: #fffafc;
+  background: #fffdfd;
   color: var(--ink);
 }
 
@@ -171,7 +172,7 @@ body {
 .form-control:focus {
   background: #fff;
   border-color: var(--accent);
-  box-shadow: 0 0 0 0.25rem rgba(244, 143, 177, 0.25);
+  box-shadow: 0 0 0 0.25rem rgba(212, 59, 122, 0.2);
 }
 
 .form-label {
@@ -186,7 +187,7 @@ body {
   border-radius: 0.85rem !important;
   padding: 0.65rem 0.85rem;
   margin-bottom: 0.4rem;
-  background: #fffafc;
+  background: #fff8fb;
   color: var(--ink);
   transition: all 0.15s ease;
 }
@@ -201,7 +202,7 @@ body {
   color: var(--ink);
   border-color: var(--line);
   border-left-color: var(--accent);
-  box-shadow: 0 3px 8px rgba(244, 143, 177, 0.25);
+  box-shadow: 0 3px 8px rgba(212, 59, 122, 0.2);
 }
 
 .portfolio-item small {
@@ -224,7 +225,7 @@ body {
 
 /* การ์ดรายการผลงาน */
 .item-card {
-  background: #fffafc;
+  background: #ffffff;
   border: 2px solid var(--line);
   border-radius: var(--radius-md);
   padding: var(--space-md);
@@ -341,7 +342,7 @@ body {
 .add-item-panel .form-select {
   border: 2px solid var(--line);
   border-radius: 0.85rem;
-  background-color: #fffafc;
+  background-color: #fffdfd;
   color: var(--ink);
   font-family: inherit;
 }
@@ -350,7 +351,7 @@ body {
 .add-item-panel .form-select:focus {
   background-color: #fff;
   border-color: var(--accent);
-  box-shadow: 0 0 0 0.25rem rgba(244, 143, 177, 0.25);
+  box-shadow: 0 0 0 0.25rem rgba(212, 59, 122, 0.2);
 }
 
 /* Textarea */
@@ -412,7 +413,7 @@ body {
 }
 
 .profile-item {
-  background: #fffafc;
+  background: #fff8fb;
   border: 2px solid var(--line);
   border-radius: 0.85rem;
   padding: 0.85rem var(--space-md);
@@ -451,9 +452,9 @@ input:focus,
 textarea:focus, 
 select:focus, 
 button:focus {
-  outline: 3px solid #f48fb1;
+  outline: 3px solid #f4b8d4;
   outline-offset: 2px;
-  box-shadow: 0 0 0 0.2rem rgba(244, 143, 177, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(212, 59, 122, 0.2);
 }
 
 /* ===== ตกแต่งการ์ด Portfolio Item ===== */
@@ -467,7 +468,7 @@ button:focus {
   flex-direction: column;
   overflow: hidden;
   padding: 1.1rem 1.1rem var(--space-md);
-  box-shadow: 0 4px 12px -4px rgba(232, 115, 155, 0.18);
+  box-shadow: 0 4px 12px -4px rgba(212, 59, 122, 0.15);
 }
 
 .item-top {
@@ -481,7 +482,7 @@ button:focus {
 
 .item-type {
   background: var(--lilac);
-  color: #5b3fa3;
+  color: #6b52c0;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.18rem 0.75rem;
@@ -508,12 +509,6 @@ button:focus {
   margin-bottom: 0.9rem;
 }
 
-/* ส่วนรายละเอียดเพิ่มเติม (กดปุ่มดูรายละเอียดเพื่อเปิด/ปิด) */
-.item-details {
-  padding-top: 0.65rem;
-  border-top: 1px dashed var(--line);
-}
-
 /* reflection */
 .reflection {
   display: flex;
@@ -523,15 +518,15 @@ button:focus {
 }
 
 .reflection-block {
-  background: #fff5f8;
-  border: 1px solid #f48fb1;
+  background: #fff3f7;
+  border: 1px solid #f8bbd0;
   border-radius: 0.9rem;
   padding: 0.6rem 0.9rem;
 }
 
 .reflection-block:nth-child(even) {
-  background: #f6f1ff;
-  border-color: #b9a4f0;
+  background: #f4effc;
+  border-color: #d8c8f8;
 }
 
 .reflection-label {
@@ -542,7 +537,7 @@ button:focus {
 }
 
 .reflection-block:nth-child(even) .reflection-label {
-  color: #6346b0;
+  color: #6b52c0;
 }
 
 .reflection-text {
@@ -608,8 +603,8 @@ button:focus {
 
 .btn-delete-item {
   background: #fff;
-  color: #c9302c;
-  border: 2px solid #f5c2c0;
+  color: #d32f2f;
+  border: 2px solid #ffcdd2;
   border-radius: var(--radius-pill);
   padding: 0.25rem 0.95rem;
   font-size: 0.82rem;
@@ -618,9 +613,9 @@ button:focus {
 }
 
 .btn-delete-item:hover {
-  background: #ffe3e0;
-  border-color: #ef8354;
-  color: #8a2b14;
+  background: #ffebee;
+  border-color: #e57373;
+  color: #c62828;
 }
 
 .items-panel {
@@ -636,11 +631,11 @@ button:focus {
   text-align: center;
 }
 
-/* ===== Issue #22: Disabled States, Error Feedback & Empty State ===== */
+/* Disabled States & Error Feedback */
 .form-control:disabled,
 .form-select:disabled,
 textarea:disabled {
-  background-color: #f0e8ec;
+  background-color: #f7f1f4;
   border-color: var(--line);
   color: var(--muted);
   opacity: 0.7;
@@ -649,8 +644,8 @@ textarea:disabled {
 
 .btn:disabled,
 .btn-accent:disabled {
-  background-color: #e5d8df;
-  border-color: #e5d8df;
+  background-color: #ecd5e2;
+  border-color: #ecd5e2;
   color: var(--muted);
   box-shadow: none;
   transform: none;
@@ -659,7 +654,7 @@ textarea:disabled {
 }
 
 .invalid-feedback {
-  color: #c92a3e;
+  color: #d32f2f;
   font-size: 0.82rem;
   font-weight: 500;
   margin-top: 0.35rem;
@@ -667,14 +662,14 @@ textarea:disabled {
 
 .form-control.is-invalid,
 .form-select.is-invalid {
-  border-color: #dc3545;
-  background-color: #fff8f9;
+  border-color: #d32f2f;
+  background-color: #fff8f8;
 }
 
 .empty-state {
   grid-column: 1 / -1;
-  background: #fffafc;
-  border: 2px dashed var(--accent-soft-2);
+  background: #fff8fb;
+  border: 2px dashed #f4b8d4;
   border-radius: var(--radius-md);
   padding: 2rem 1.25rem;
   text-align: center;
@@ -686,7 +681,7 @@ textarea:disabled {
   margin-bottom: 0.6rem;
 }
 
-/* ===== หน้าต่างยืนยัน ===== */
+/* หน้าต่างยืนยัน */
 .confirm-overlay {
   position: fixed;
   inset: 0;
@@ -695,7 +690,7 @@ textarea:disabled {
   align-items: center;
   justify-content: center;
   padding: var(--space-md);
-  background: rgba(107, 69, 82, 0.35);
+  background: rgba(122, 85, 103, 0.35);
   animation: confirm-fade 0.15s ease;
 }
 
@@ -764,7 +759,6 @@ textarea:disabled {
   to   { opacity: 1; }
 }
 
-/* สลับข้อความบนปุ่มพับเก็บ portfolio items อัตโนมัติ */
 .toggle-items-btn {
   white-space: nowrap;
   flex-shrink: 0;
@@ -779,73 +773,59 @@ textarea:disabled {
   margin-bottom: 0 !important;
 }
 
-/* ===== Responsive ===== */
-/* แท็บเล็ต (~768px) */
+/* Responsive */
 @media (max-width: 767.98px) {
   .container-xl {
     padding-left: 12px;
     padding-right: 12px;
   }
-
   .profile-panel,
   .items-grid {
     grid-template-columns: 1fr;
   }
-
   .profile-header #portfolio-select {
     max-width: 100%;
   }
-
   .btn:not(.btn-sm) {
     padding: 10px 16px;
   }
 }
 
-/* มือถือ (~375px) */
 @media (max-width: 575.98px) {
   .app-nav .navbar-brand {
     font-size: 1.5rem;
   }
-
   .brand-sub {
     display: block;
     font-size: 0.85rem;
   }
-
   .add-item-panel {
     padding: var(--space-md);
   }
-
   .add-item-actions {
     flex-direction: column;
     align-items: stretch;
   }
-
   .add-item-actions button {
     width: 100%;
   }
 }
 
-/* =========================================================
-   Portfolio Item Card & Expandable Details (Issue #22)
-   ========================================================= */
-
-/* ตัวการ์ดหลักของแต่ละ Item */
+/* Portfolio Item Card & Expandable Details */
 .item-card {
-  border: 1px solid #e9d8e4;
+  border: 1px solid #ecd5e2;
   border-radius: 1rem;
   background-color: #ffffff;
-  box-shadow: 0 4px 12px rgba(214, 51, 132, 0.05);
+  box-shadow: 0 4px 12px rgba(212, 59, 122, 0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .item-card:hover {
   transform: translateY(-2px);
-  border-color: #e685b5;
-  box-shadow: 0 8px 20px rgba(214, 51, 132, 0.12);
+  border-color: #f4b8d4;
+  box-shadow: 0 8px 20px rgba(212, 59, 122, 0.12);
 }
 
-/* ป้ายประเภท (Type Badge) */
 .item-type-badge {
   background-color: #f3e8ff;
   color: #6b21a8;
@@ -855,7 +835,6 @@ textarea:disabled {
   border-radius: 999px;
 }
 
-/* แท็กทักษะ (Skill Tags) */
 .skill-tag {
   display: inline-block;
   background-color: #fff0f6;
@@ -867,10 +846,9 @@ textarea:disabled {
   border-radius: 999px;
 }
 
-/* ปุ่มดูรายละเอียด (Show More / Collapse Toggle) */
 .btn-item-detail {
-  color: #d63384;
-  border: 1px solid #f3b8d4;
+  color: #d43b7a;
+  border: 1px solid #f4b8d4;
   background-color: #fff8fb;
   border-radius: 999px;
   font-size: 0.82rem;
@@ -880,16 +858,15 @@ textarea:disabled {
 }
 
 .btn-item-detail:hover {
-  background-color: #d63384;
-  border-color: #d63384;
+  background-color: #d43b7a;
+  border-color: #d43b7a;
   color: #ffffff;
 }
 
-/* กล่อง Reflection ด้านในตอนกางรายละเอียด  */
 .reflection-box {
   background-color: #fdf8fb;
   border: none;
-  border-left: 3px solid #e685b5;
+  border-left: 3px solid #f4b8d4;
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   margin-bottom: 0.65rem;
@@ -900,10 +877,7 @@ textarea:disabled {
   border-left-color: #8b5cf6;
 }
 
-/* =================================
-   POWER UP NAVBAR
-================================= */
-
+/* POWER UP NAVBAR */
 .site-header {
     position: sticky;
     top: 0;
@@ -920,8 +894,6 @@ textarea:disabled {
     box-shadow: var(--shadow);
     backdrop-filter: blur(12px);
 }
-
-/* LOGO */
 
 .brand-link {
     display: flex;
@@ -953,8 +925,6 @@ textarea:disabled {
     font-size: 0.9rem;
 }
 
-/* MENU */
-
 .app-nav .nav-link {
     color: var(--muted);
     font-weight: 700;
@@ -968,8 +938,6 @@ textarea:disabled {
     background: var(--accent-soft);
     color: var(--accent-dark);
 }
-
-/* DESKTOP BUTTONS */
 
 .desktop-nav-actions {
     display: flex;
@@ -985,19 +953,17 @@ textarea:disabled {
 
 .btn-reset {
     background: white;
-    color: #dc3545;
-    border: 2px solid #dc3545;
+    color: #e57373;
+    border: 2px solid #e57373;
     border-radius: 999px;
     padding: 10px 20px;
     font-weight: 700;
 }
 
 .btn-reset:hover {
-    background: #dc3545;
+    background: #d32f2f;
     color: white;
 }
-
-/* MOBILE */
 
 .mobile-nav-actions,
 .mobile-reset {
@@ -1015,74 +981,56 @@ textarea:disabled {
     box-shadow: none;
 }
 
-/* SCROLL OFFSET */
-
 #portfolios-section,
 #portfolio-items-section,
 #add-item-section {
     scroll-margin-top: 115px;
 }
 
-/* SMOOTH SCROLL */
-
 html {
     scroll-behavior: smooth;
 }
 
-/* RESPONSIVE */
-
 @media (max-width: 991.98px) {
-
     .app-nav {
         padding: 10px;
     }
-
     .brand-logo {
         width: 48px;
         height: 48px;
     }
-
     .brand-copy strong {
         font-size: 1.05rem;
     }
-
     .brand-copy small {
         font-size: 0.75rem;
     }
-
     .mobile-nav-actions {
         display: flex;
         align-items: center;
         gap: 8px;
     }
-
     .desktop-nav-actions {
         display: none;
     }
-
     .app-nav .navbar-collapse {
         padding-top: 15px;
     }
-
     .app-nav .nav-link {
         display: block;
         padding: 12px 16px;
     }
-
     .mobile-reset {
         display: block;
         margin-top: 12px;
     }
-
     .mobile-reset .btn-reset {
         width: 100%;
     }
-
     .mobile-nav-actions .nav-add-btn {
         padding: 9px 15px;
         font-size: 0.85rem;
     }
-
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1090,29 +1038,24 @@ html {
         scroll-behavior: auto;
     }
 }
-@media (max-width: 991.98px) {
 
+@media (max-width: 991.98px) {
     .desktop-nav-actions {
         display: flex;
         flex-direction: column;
         margin-top: 12px;
     }
-
-    /* ซ่อน Add Item ตัว Desktop */
     .desktop-nav-actions .nav-add-btn {
         display: none;
     }
-
-    /* Reset อยู่ในเมนู Mobile */
     .desktop-nav-actions #btn-reset-data {
         width: 100%;
     }
-
     .mobile-reset {
         display: none;
     }
 }
-/* Navbar Menu Spacing */
+
 .app-nav .navbar-nav {
     gap: 14px;
 }
@@ -1123,20 +1066,17 @@ html {
     transition: all 0.25s ease;
 }
 
-/* Hover Effect */
 .app-nav .nav-link:hover {
     background: var(--accent-soft);
     color: var(--accent-dark);
     transform: translateY(-2px);
 }
 
-/* Active Menu */
 .app-nav .nav-link.active {
     background: var(--accent-soft);
     color: var(--accent-dark);
 }
 
-/* Import Item Button */
 #btn-import-item {
     background: var(--accent-soft);
     color: var(--accent-dark);
@@ -1147,7 +1087,6 @@ html {
     transition: all 0.25s ease;
 }
 
-/* Hover */
 #btn-import-item:hover {
     background: var(--accent);
     color: white;
@@ -1156,7 +1095,6 @@ html {
     transform: translateY(-2px);
 }
 
-/* Click */
 #btn-import-item:active {
     transform: scale(0.97);
 }

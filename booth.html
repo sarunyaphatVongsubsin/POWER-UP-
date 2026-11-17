@@ -3,36 +3,137 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POWER UP! - Booth</title>
 
-    <!-- ใช้ Bootstrap และ CSS ชุดเดียวกับ index.html -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/booth.css">
 </head>
 
 <body>
+    <header class="site-header">
+        <div class="container-xl">
+            <nav class="navbar navbar-expand-lg app-nav">
+                <a class="navbar-brand brand-link" href="index.html" aria-label="POWER UP Home">
+                    <img src="assets/logo.png" alt="POWER UP Logo" class="brand-logo">
+                    <span class="brand-copy">
+                        <strong>POWER UP!</strong>
+                        <small>Learning Portfolio</small>
+                    </span>
+                </a>
 
-    <main class="container py-5">
+                <div class="mobile-nav-actions">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
 
-        <h1>Booth</h1>
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html#portfolios-section">Portfolios</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html#portfolio-items-section">Portfolio Items</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="booth.html" aria-current="page">Booth</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
 
-        <p>Welcome to POWER UP! Booth</p>
+    <main class="container-xl py-4">
+        <div id="toast-area" class="toast-area" aria-live="polite"></div>
 
-        <a href="index.html"
-           class="btn btn-accent">
-            Back to Home
-        </a>
+        <!-- ===== Booth: Challenge ของกลุ่ม ===== -->
+        <section class="panel mb-4" id="booth-section" aria-labelledby="booth-heading">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
+                <h1 class="h3 fw-bold mb-0" id="booth-heading">Booth Challenges</h1>
+                <span class="badge rounded-pill booth-count" id="challenge-count">0</span>
+            </div>
+            <p class="text-muted small mb-4">กิจกรรมที่บูธของกลุ่มเรา — ทำ Challenge สำเร็จแล้วรับ Portfolio Item JSON ไปนำเข้า Portfolio ของตัวเองได้เลย</p>
 
+            <div id="challenge-list" class="challenge-grid"></div>
+        </section>
+
+        <!-- ===== Host Tool ===== -->
+        <section class="panel" id="host-tool-section" aria-labelledby="host-heading">
+            <div class="mb-3">
+                <h2 class="h4 fw-bold mb-1" id="host-heading">Host Tool</h2>
+                <p class="text-muted small mb-0">สำหรับ Host: เลือก Challenge กรอกผลของผู้เล่น แล้วกด Generate เพื่อสร้าง Portfolio Item JSON</p>
+            </div>
+
+            <form id="host-form" novalidate>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="host-challenge" class="form-label fw-semibold">
+                            Challenge <span class="req">*</span>
+                        </label>
+                        <select id="host-challenge" class="form-select" required aria-describedby="host-challenge-error">
+                            <option value="" selected disabled>เลือก Challenge</option>
+                        </select>
+                        <div class="invalid-feedback" id="host-challenge-error">กรุณาเลือก Challenge</div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="host-player" class="form-label fw-semibold">
+                            ชื่อผู้เล่น <span class="hint">(ไม่บังคับ)</span>
+                        </label>
+                        <input type="text" id="host-player" class="form-control" maxlength="60"
+                            placeholder="ชื่อหรือชื่อเล่นของผู้เล่น">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="host-note" class="form-label fw-semibold">
+                            หมายเหตุ / ผลที่ผู้เล่นทำได้ <span class="req">*</span>
+                        </label>
+                        <textarea id="host-note" class="form-control" rows="3" maxlength="500"
+                            placeholder="เช่น ทำครบทุกขั้นตอนภายใน 8 นาที แก้บั๊กได้ 3 จุด"
+                            required aria-describedby="host-note-error"></textarea>
+                        <div class="invalid-feedback" id="host-note-error">กรุณากรอกหมายเหตุหรือผลที่ผู้เล่นทำได้</div>
+                    </div>
+                </div>
+
+                <div id="host-error" class="alert alert-danger mt-3 mb-0" role="alert" hidden></div>
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <button type="submit" class="btn btn-accent" id="btn-generate">Generate Portfolio Item JSON</button>
+                </div>
+            </form>
+
+            <!-- ผลลัพธ์ -->
+            <div id="output-area" class="output-area" hidden>
+                <hr class="my-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                    <label for="json-output" class="form-label fw-semibold mb-0">Portfolio Item JSON</label>
+                    <span class="hint" id="output-meta"></span>
+                </div>
+                <textarea id="json-output" class="form-control json-output" rows="14" readonly
+                    spellcheck="false" aria-describedby="copy-status"></textarea>
+
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                    <button type="button" class="btn btn-accent" id="btn-copy">Copy</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3" id="btn-download">
+                        Download .json
+                    </button>
+                    <span id="copy-status" class="small fw-semibold" role="status" aria-live="polite"></span>
+                </div>
+            </div>
+        </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="booth.js"></script>
 </body>
+
 </html>
