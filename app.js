@@ -566,3 +566,108 @@ async function initializeApp() {
 
 // เริ่มทำงานเมื่อ HTML โหลด DOM เสร็จ
 document.addEventListener("DOMContentLoaded", initializeApp);
+
+
+/* =================================
+   POWER UP NAVIGATION
+================================= */
+
+function initializePowerUpNavigation() {
+
+    // 1. Add Item: Scroll ไปยังฟอร์ม
+    document.querySelectorAll("[data-scroll-target]")
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                const targetId = button.dataset.scrollTarget;
+                const target = document.getElementById(targetId);
+
+                if (!target) return;
+
+                target.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+                // Focus ไม่เปลี่ยน และไม่ซ่อนฟอร์ม
+            });
+        });
+
+
+    // 2. Smooth Scroll เมนู
+    const navLinks = document.querySelectorAll(
+        '.app-nav .nav-link[href^="#"]'
+    );
+
+    navLinks.forEach(link => {
+
+        link.addEventListener("click", event => {
+
+            const targetId = link.getAttribute("href").substring(1);
+            const target = document.getElementById(targetId);
+
+            if (!target) return;
+
+            event.preventDefault();
+
+            target.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+            // ปิด Hamburger หลังเลือกเมนู
+            const navbar = document.getElementById("mainNavbar");
+
+            if (navbar && navbar.classList.contains("show")) {
+                bootstrap.Collapse
+                    .getOrCreateInstance(navbar)
+                    .hide();
+            }
+
+        });
+
+    });
+
+
+    // 3. Active Menu
+    const sections = document.querySelectorAll(
+        "#portfolios-section, #portfolio-items-section"
+    );
+
+    const observer = new IntersectionObserver(entries => {
+
+        entries.forEach(entry => {
+
+            if (!entry.isIntersecting) return;
+
+            navLinks.forEach(link => {
+
+                const isActive =
+                    link.getAttribute("href") ===
+                    "#" + entry.target.id;
+
+                link.classList.toggle("active", isActive);
+
+            });
+
+        });
+
+    }, {
+        rootMargin: "-120px 0px -55% 0px"
+    });
+
+    sections.forEach(section => observer.observe(section));
+
+}
+
+
+// รองรับกรณีโหลด JavaScript ก่อนหรือหลัง DOM
+if (document.readyState === "loading") {
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializePowerUpNavigation
+    );
+} else {
+    initializePowerUpNavigation();
+}

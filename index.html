@@ -18,18 +18,105 @@
 
 <body>
     <!-- top navbar -->
-    <header class="pt-3">
-        <div class="container-xl">
-            <nav class="navbar app-nav">
-                <div class="container-fluid px-3 d-flex justify-content-between align-items-center">
-                    <a class="navbar-brand fw-bold" href="#">
-                        POWER UP! <span class="fw-normal brand-sub">Learning Portfolio</span>
-                    </a>
-                    <button id="btn-reset-data" type="button" class="btn btn-sm btn-outline-danger">Reset Data</button>
+    <header class="site-header">
+    <div class="container-xl">
+        <nav class="navbar navbar-expand-lg app-nav">
+
+            <!-- Brand -->
+            <a class="navbar-brand brand-link"
+               href="index.html"
+               aria-label="POWER UP Home">
+
+                <img src="assets/logo.png"
+                     alt="POWER UP Logo"
+                     class="brand-logo">
+
+                <span class="brand-copy">
+                    <strong>POWER UP!</strong>
+                    <small>Learning Portfolio</small>
+                </span>
+            </a>
+
+            <!-- Mobile actions -->
+            <div class="mobile-nav-actions">
+                <button class="btn btn-accent nav-add-btn"
+                        type="button"
+                        data-scroll-target="add-item-section">
+                    + Add Item
+                </button>
+
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+
+            <!-- Navigation -->
+            <div class="collapse navbar-collapse" id="mainNavbar">
+
+                <ul class="navbar-nav mx-auto">
+
+                    <li class="nav-item">
+                        <a class="nav-link active"
+                           href="#portfolios-section">
+                            Portfolios
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="#portfolio-items-section">
+                            Portfolio Items
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           href="booth.html">
+                            Booth
+                        </a>
+                    </li>
+
+                </ul>
+
+                <!-- Desktop actions -->
+                <div class="desktop-nav-actions">
+
+                    <button class="btn btn-accent nav-add-btn"
+                            type="button"
+                            data-scroll-target="add-item-section">
+                        + Add Item
+                    </button>
+
+                    <button id="btn-reset-data"
+                            class="btn btn-reset"
+                            type="button">
+                        <i class="bi bi-trash3"></i>
+                        Reset Data
+                    </button>
+
                 </div>
-            </nav>
-        </div>
-    </header>
+
+                <!-- Mobile Reset -->
+                <div class="mobile-reset">
+                    <button type="button"
+                            class="btn btn-reset"
+                            data-bs-toggle="modal"
+                            data-bs-target="#reset-data-modal">
+                        Reset Data
+                    </button>
+                </div>
+
+            </div>
+        </nav>
+    </div>
+</header>
+
 
     <!-- main content -->
     <main class="container-xl py-4">
@@ -95,35 +182,42 @@
             <section class="col-lg-8 main-column">
 
                 <!-- Profile -->
-                <div class="panel profile-panel" id="profile-panel">
-                    <div class="profile-header">
-                        <h2 id="profile-name" class="h4 fw-bold mb-0">เลือก Portfolio</h2>
-                        <select id="portfolio-select" class="form-select">
-                            <option value="" disabled selected>-- เลือก Portfolio --</option>
-                        </select>
-                    </div>
-
-                    <div class="profile-item">
-                        <small>WHAT I ENJOY</small>
-                        <p id="view-what-enjoy">-</p>
-                    </div>
-                    <div class="profile-item">
-                        <small>WHAT I'VE TRIED</small>
-                        <p id="view-what-tried">-</p>
-                    </div>
-                    <div class="profile-item profile-item-full">
-                        <small>WHAT I'M CURIOUS ABOUT</small>
-                        <p id="view-what-curious">-</p>
+                <div id="portfolios-section">
+                    <div class="panel profile-panel" id="profile-panel">
+                        <div class="profile-header">
+                            <h2 id="profile-name" class="h4 fw-bold mb-0">เลือก Portfolio</h2>
+                            <select id="portfolio-select" class="form-select">
+                                <option value="" disabled selected>-- เลือก Portfolio --</option>
+                            </select>
+                        </div>
+                        <div class="profile-item">
+                            <small>WHAT I ENJOY</small>
+                            <p id="view-what-enjoy">-</p>
+                        </div>
+                        <div class="profile-item">
+                            <small>WHAT I'VE TRIED</small>
+                            <p id="view-what-tried">-</p>
+                        </div>
+                        <div class="profile-item profile-item-full">
+                            <small>WHAT I'M CURIOUS ABOUT</small>
+                            <p id="view-what-curious">-</p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Portfolio Items -->
-                <section class="panel items-panel">
+                <section class="panel items-panel" id="portfolio-items-section">
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                         <div class="d-flex align-items-center gap-2">
                             <h2 class="h4 fw-bold mb-0">Portfolio Items</h2>
                             <span id="portfolio-items-count" class="badge rounded-pill">0</span>
                         </div>
+                        <button type="button"
+                                class="btn btn-outline-secondary rounded-pill px-3"
+                                id="btn-import-item">
+                                <i class="bi bi-upload"></i>
+                                Import Item
+                        </button>
                         <button
                             class="btn btn-sm btn-outline-secondary rounded-pill px-3 toggle-items-btn"
                             type="button"
@@ -149,7 +243,7 @@
                 </section>
 
                 <!-- Add Portfolio Item -->
-                <div class="panel add-item-panel">
+                <div class="panel add-item-panel" id="add-item-section">
                     <div class="mb-4">
                         <h2 class="h4 fw-bold mb-1">Add Portfolio Item</h2>
                         <p class="text-muted small mb-0">
@@ -309,8 +403,8 @@
     </main>
 
     <!-- scripts -->
-    <script src="app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
 </body>
 
 </html>
