@@ -124,7 +124,7 @@ function runPortfolioItemValidationTests() {
         nextStep: "Write more tests"
       },
 
-      evidence: []
+      evidence: ["https://github.com/example/repo"]
     }
   };
 
