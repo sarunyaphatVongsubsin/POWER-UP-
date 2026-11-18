@@ -100,8 +100,12 @@ function validatePortfolioItemData(data) {
     errors.push("Reflection must be an object");
   } else {
     ["whatIDid", "whatILearned", "challenge", "nextStep"].forEach(field => {
-      if (typeof data.reflection[field] !== "string")
-        errors.push(`Reflection ${field} must be a string`);
+      if (
+        typeof data.reflection[field] !== "string" ||
+        !data.reflection[field].trim()
+      ) {
+        errors.push(`Reflection ${field} is required and must be a non-empty string`);
+      }
     });
   }
 
@@ -687,6 +691,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRetry = document.getElementById('btn-retry-import');
   const btnPreview = document.getElementById('btn-preview-json');
   const btnImport = document.getElementById('btn-confirm-import');
+  const btnOpenImport = document.getElementById('btn-import-item');
+
+  if (btnOpenImport) {
+    btnOpenImport.addEventListener('click', () => {
+      const importSection = document.getElementById('import-section');
+
+      if (importSection) {
+        importSection.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  }
 
   let verifiedItemData = null;
 
@@ -694,20 +712,32 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnDownloadSample) {
     btnDownloadSample.addEventListener('click', () => {
       const sampleItem = {
-        id: "item-sample-999",
-        title: "Sample Portfolio Item",
-        type: "Course Assignment",
-        date: "2026-11-18",
-        role: "Developer",
-        description: "ตัวอย่างรายละเอียดผลงานสำหรับการทดสอบระบบ Import",
-        skills: ["JavaScript", "Bootstrap 5", "JSON Schema"],
-        reflection: {
-          whatIDid: "พัฒนาฟังก์ชันนำเข้าข้อมูลผลงาน",
-          whatILearned: "การตรวจสอบโครงสร้าง JSON และการจัดการ Error",
-          challenge: "การป้องกันช่องโหว่ XSS และการตรวจสอบข้อมูลซ้ำ",
-          nextStep: "เชื่อมโยงกับระบบ Reflection"
+        schema: "powerup-portfolio-item",
+        version: 1,
+        exchangeId: "sample-exchange-999",
+        issuedAt: new Date().toISOString(),
+        source: {
+          group: "Sample Group",
+          booth: "Sample Booth",
+          challenge: "Sample Challenge",
+          host: "Sample Host"
         },
-        evidence: ["https://github.com/example/repo"]
+        item: {
+          id: "item-sample-999",
+          title: "Sample Portfolio Item",
+          type: "Course Assignment",
+          date: "2026-11-18",
+          role: "Developer",
+          description: "ตัวอย่างรายละเอียดผลงานสำหรับการทดสอบระบบ Import",
+          skills: ["JavaScript", "Bootstrap 5", "JSON Schema"],
+          reflection: {
+            whatIDid: "พัฒนาฟังก์ชันนำเข้าข้อมูลผลงาน",
+            whatILearned: "การตรวจสอบโครงสร้าง JSON และการจัดการ Error",
+            challenge: "การป้องกันช่องโหว่ XSS และการตรวจสอบข้อมูลซ้ำ",
+            nextStep: "เชื่อมโยงกับระบบ Reflection"
+          },
+          evidence: ["https://github.com/example/repo"]
+        }
       };
 
       const blob = new Blob([JSON.stringify(sampleItem, null, 2)], { type: 'application/json' });
@@ -771,7 +801,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ตรวจสอบ JSON Wrapper ด้วย Issue #27
-    const result = validatePortfolioItemJson(rawText);
+    // รวบรวม exchangeId ที่มีอยู่จากทุก Portfolio
+    const existingExchangeIds = [];
+
+    Object.keys(localStorage)
+      .filter(key => key.startsWith('portfolio_') && key.endsWith('_items'))
+      .forEach(key => {
+        try {
+          const items = JSON.parse(localStorage.getItem(key) || '[]');
+
+          if (Array.isArray(items)) {
+            items.forEach(existing => {
+              if (existing.exchangeId) {
+                existingExchangeIds.push(existing.exchangeId);
+              }
+            });
+          }
+        } catch (error) {
+          console.error(`Cannot read ${key}:`, error);
+        }
+      });
+
+    // ตรวจสอบ JSON พร้อมเช็กรหัสซ้ำ
+    const result = validatePortfolioItemJson(rawText, existingExchangeIds);
 
     if (!result.valid) {
       showError(result.errors.join(' | '));
@@ -821,8 +873,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 5. ปุ่มยืนยัน Import
+
   async function performImport() {
     if (!verifiedItemData) return;
+
     const portfolioId = targetPortSelect ? targetPortSelect.value : '';
 
     if (btnImport) btnImport.disabled = true;
@@ -832,10 +886,42 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await new Promise(res => setTimeout(res, 700));
 
+      // 1. บันทึกลงรายการ Portfolio หลัก
+      const portfolios = JSON.parse(localStorage.getItem('portfolios') || '[]');
+
+      const targetPortfolio = portfolios.find(
+        portfolio => portfolio.portfolioId === portfolioId
+      );
+
+      if (!targetPortfolio) {
+        throw new Error('ไม่พบ Portfolio ปลายทาง');
+      }
+
+      if (!Array.isArray(targetPortfolio.items)) {
+        targetPortfolio.items = [];
+      }
+
+      // ป้องกันการ Import ID ซ้ำ
+      const duplicate = targetPortfolio.items.some(
+        item => item.id === verifiedItemData.id
+      );
+
+      if (duplicate) {
+        throw new Error('Portfolio Item นี้มีอยู่แล้ว');
+      }
+
+      targetPortfolio.items.push(verifiedItemData);
+
+      localStorage.setItem('portfolios', JSON.stringify(portfolios));
+
+      // 2. บันทึกลง Storage แยก เพื่อรองรับระบบเดิม
       const storageKey = `portfolio_${portfolioId}_items`;
       const existingItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      existingItems.push(verifiedItemData);
-      localStorage.setItem(storageKey, JSON.stringify(existingItems));
+
+      if (!existingItems.some(item => item.id === verifiedItemData.id)) {
+        existingItems.push(verifiedItemData);
+        localStorage.setItem(storageKey, JSON.stringify(existingItems));
+      }
 
       showStatus('Import สำเร็จ! กำลังพาไปยังหน้า Reflection / Evidence...', 'alert-success');
 
@@ -844,10 +930,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1000);
 
     } catch (err) {
-      showStatus('บันทึกล้มเหลว: ไม่สามารถบันทึกข้อมูลลงระบบได้', 'alert-danger');
+      if (btnImport) btnImport.disabled = false;
+      console.error('Import error:', err);
+      showStatus(`บันทึกล้มเหลว: ${err.message}`, 'alert-danger');
       if (btnRetry) btnRetry.classList.remove('d-none');
     }
   }
+
 
   if (btnImport) btnImport.addEventListener('click', performImport);
   if (btnRetry) btnRetry.addEventListener('click', performImport);
