@@ -212,6 +212,38 @@ function runPortfolioItemValidationTests() {
         }
       }),
       expected: false
+    },
+    {
+      name: "Empty input",
+      input: "",
+      expected: false
+    },
+    {
+      name: "JSON array instead of object",
+      input: JSON.stringify([sample]),
+      expected: false
+    },
+    {
+      name: "Wrong title type",
+      input: JSON.stringify({
+        ...sample,
+        item: {
+          ...sample.item,
+          title: 123
+        }
+      }),
+      expected: false
+    },
+    {
+      name: "Wrong skills type",
+      input: JSON.stringify({
+        ...sample,
+        item: {
+          ...sample.item,
+          skills: "JavaScript"
+        }
+      }),
+      expected: false
     }
   ];
 

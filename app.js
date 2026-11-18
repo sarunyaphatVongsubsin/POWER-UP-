@@ -71,63 +71,97 @@ function validatePortfolioData(data) {
 }
 
 // ตรวจสอบข้อมูล Item รวมถึงวันที่ Skills, Reflection และ Evidence
-function validatePortfolioItemData(data) {
-  if (!data || typeof data !== "object" || Array.isArray(data))
+
+function validatePortfolioItemData(data, level = "submission") {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
     return ["Portfolio item must be an object"];
+  }
+
+  if (!["booth", "submission"].includes(level)) {
+    return ["Invalid validation level"];
+  }
 
   const errors = [];
+
+  // Required fields at booth level
   ["id", "title", "type", "date", "role", "description"].forEach(field => {
-    if (typeof data[field] !== "string" || !data[field].trim())
+    if (typeof data[field] !== "string" || !data[field].trim()) {
       errors.push(`${field} is required`);
+    }
   });
 
-  // ตรวจสอบวันที่จริงในรูปแบบ YYYY-MM-DD
+  // Validate date
   if (typeof data.date === "string" && data.date.trim()) {
     const date = new Date(data.date);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date) ||
+
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(data.date) ||
       Number.isNaN(date.getTime()) ||
-      date.toISOString().slice(0, 10) !== data.date) {
+      date.toISOString().slice(0, 10) !== data.date
+    ) {
       errors.push("Date must be a valid YYYY-MM-DD date");
     }
   }
 
-  if (!Array.isArray(data.skills) ||
-    !data.skills.every(skill => typeof skill === "string"))
-    errors.push("Skills must be an array of strings");
-
-  if (!data.reflection || typeof data.reflection !== "object" ||
-    Array.isArray(data.reflection)) {
-    errors.push("Reflection must be an object");
-  } else {
-    ["whatIDid", "whatILearned", "challenge", "nextStep"].forEach(field => {
-      if (
-        typeof data.reflection[field] !== "string" ||
-        !data.reflection[field].trim()
-      ) {
-        errors.push(`Reflection ${field} is required and must be a non-empty string`);
-      }
-    });
+  // Validate skills
+  if (
+    !Array.isArray(data.skills) ||
+    !data.skills.every(skill =>
+      typeof skill === "string" && skill.trim()
+    )
+  ) {
+    errors.push("Skills must be an array of non-empty strings");
   }
 
-  if (!Array.isArray(data.evidence)) {
-    errors.push("Evidence must be an array");
-  } else {
-    data.evidence.forEach(url => {
-      if (typeof url !== "string") {
-        errors.push("Evidence URL must be a string");
-        return;
-      }
-      try {
-        const parsed = new URL(url);
-        if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname)
+  // Additional requirements at submission level
+  if (level === "submission") {
+    if (
+      !data.reflection ||
+      typeof data.reflection !== "object" ||
+      Array.isArray(data.reflection)
+    ) {
+      errors.push("Reflection must be an object");
+    } else {
+      ["whatIDid", "whatILearned", "challenge", "nextStep"].forEach(field => {
+        if (
+          typeof data.reflection[field] !== "string" ||
+          !data.reflection[field].trim()
+        ) {
+          errors.push(
+            `Reflection ${field} is required and must be a non-empty string`
+          );
+        }
+      });
+    }
+
+    if (!Array.isArray(data.evidence) || data.evidence.length === 0) {
+      errors.push("Evidence must be a non-empty array");
+    } else {
+      data.evidence.forEach(url => {
+        if (typeof url !== "string") {
+          errors.push("Evidence URL must be a string");
+          return;
+        }
+
+        try {
+          const parsed = new URL(url);
+
+          if (
+            !["http:", "https:"].includes(parsed.protocol) ||
+            !parsed.hostname
+          ) {
+            errors.push(`Invalid Evidence URL: ${url}`);
+          }
+        } catch {
           errors.push(`Invalid Evidence URL: ${url}`);
-      } catch {
-        errors.push(`Invalid Evidence URL: ${url}`);
-      }
-    });
+        }
+      });
+    }
   }
+
   return errors;
 }
+
 
 // ตรวจสอบข้อมูลทุก Portfolio และข้ามรายการที่ไม่ผ่าน
 function sanitizePortfolios(list, source) {
@@ -555,7 +589,7 @@ async function initializeApp() {
       evidence: splitList(getValue("item-evidence"))
     };
 
-    const errors = validatePortfolioItemData(newItem);
+    const errors = validatePortfolioItemData(newItem, "booth");
     if (errors.length) return showStatus(errors[0], "danger");
 
     if (!Array.isArray(target.items)) target.items = [];
@@ -1053,6 +1087,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isAllPassed = hasImportedItem && hasCompleteReflection && hasEvidence;
 
+
     // เตรียมข้อมูลสำหรับ Export
     currentExportPayload = {
       ...basePortfolios[portfolioId],
@@ -1060,46 +1095,101 @@ document.addEventListener('DOMContentLoaded', () => {
       items: importedItems
     };
 
-    // เปิดใช้งานปุ่ม Export เมื่อผ่านเกณฑ์ครบ (ปุ่ม Copy เปิดให้ใช้สำรองได้เมื่อมีข้อมูล)
+    // เปิดใช้งานปุ่มตาม Checklist
     if (btnExportJson) btnExportJson.disabled = !isAllPassed;
     if (btnCopyJson) btnCopyJson.disabled = !hasImportedItem;
   }
 
+  // ตรวจสอบ Portfolio ที่เลือก
   if (exportPortSelect) {
     exportPortSelect.addEventListener('change', (e) => {
       evaluatePortfolioChecklist(e.target.value);
     });
+
+    // ตรวจสอบข้อมูลเริ่มต้นเมื่อเปิดหน้าเว็บ
+    evaluatePortfolioChecklist(exportPortSelect.value);
   }
 
-  // ปุ่ม Export ดาวน์โหลดไฟล์ชื่อ my-portfolio.json
+  // สร้าง Portfolio Item Wrapper
+  function createExchangePayload() {
+    if (
+      !currentExportPayload ||
+      !Array.isArray(currentExportPayload.items) ||
+      currentExportPayload.items.length === 0
+    ) {
+      return null;
+    }
+
+    const item = currentExportPayload.items.find(item =>
+      item.reflection &&
+      item.evidence &&
+      item.evidence.length > 0
+    );
+
+    if (!item) return null;
+
+    return {
+      schema: "powerup-portfolio-item",
+      version: 1,
+      exchangeId: crypto.randomUUID(),
+      issuedAt: new Date().toISOString(),
+      source: {
+        group: "Group information not provided",
+        booth: "Booth information not provided",
+        challenge: "Challenge information not provided",
+        host: "Host information not provided"
+      },
+      item: item
+    };
+  }
+
+
+  // ปุ่ม Export ดาวน์โหลด Portfolio Item JSON
   if (btnExportJson) {
     btnExportJson.addEventListener('click', () => {
-      if (!currentExportPayload) return;
+      const payload = createExchangePayload();
 
-      const jsonString = JSON.stringify(currentExportPayload, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
+      if (!payload) return;
+
+      const jsonString = JSON.stringify(payload, null, 2);
+      const blob = new Blob([jsonString], {
+        type: 'application/json'
+      });
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
+
       a.href = url;
-      a.download = 'my-portfolio.json';
+      a.download = 'portfolio-item.json';
       a.click();
+
       URL.revokeObjectURL(url);
 
-      showExportMessage('ดาวน์โหลดไฟล์ my-portfolio.json เรียบร้อยแล้ว');
+      showExportMessage(
+        'ดาวน์โหลดไฟล์ portfolio-item.json เรียบร้อยแล้ว'
+      );
     });
   }
 
-  // ปุ่ม Copy JSON สำรอง
+  // ปุ่ม Copy JSON
   if (btnCopyJson) {
     btnCopyJson.addEventListener('click', async () => {
-      if (!currentExportPayload) return;
+      const payload = createExchangePayload();
 
-      const jsonString = JSON.stringify(currentExportPayload, null, 2);
+      if (!payload) return;
+
+      const jsonString = JSON.stringify(payload, null, 2);
+
       try {
         await navigator.clipboard.writeText(jsonString);
-        showExportMessage('คัดลอกข้อมูล JSON ลงคลิปบอร์ดเรียบร้อยแล้ว');
+
+        showExportMessage(
+          'คัดลอก Portfolio Item JSON เรียบร้อยแล้ว'
+        );
       } catch (err) {
-        showExportMessage('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณากดปุ่ม Export แทน');
+        showExportMessage(
+          'ไม่สามารถคัดลอก JSON ได้ กรุณาใช้ปุ่ม Export แทน'
+        );
       }
     });
   }
