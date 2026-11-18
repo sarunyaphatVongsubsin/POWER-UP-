@@ -85,18 +85,18 @@ function validatePortfolioItemData(data) {
   if (typeof data.date === "string" && data.date.trim()) {
     const date = new Date(data.date);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date) ||
-        Number.isNaN(date.getTime()) ||
-        date.toISOString().slice(0, 10) !== data.date) {
+      Number.isNaN(date.getTime()) ||
+      date.toISOString().slice(0, 10) !== data.date) {
       errors.push("Date must be a valid YYYY-MM-DD date");
     }
   }
 
   if (!Array.isArray(data.skills) ||
-      !data.skills.every(skill => typeof skill === "string"))
+    !data.skills.every(skill => typeof skill === "string"))
     errors.push("Skills must be an array of strings");
 
   if (!data.reflection || typeof data.reflection !== "object" ||
-      Array.isArray(data.reflection)) {
+    Array.isArray(data.reflection)) {
     errors.push("Reflection must be an object");
   } else {
     ["whatIDid", "whatILearned", "challenge", "nextStep"].forEach(field => {
@@ -574,102 +574,102 @@ document.addEventListener("DOMContentLoaded", initializeApp);
 
 function initializePowerUpNavigation() {
 
-    // 1. Add Item: Scroll ไปยังฟอร์ม
-    document.querySelectorAll("[data-scroll-target]")
-        .forEach(button => {
+  // 1. Add Item: Scroll ไปยังฟอร์ม
+  document.querySelectorAll("[data-scroll-target]")
+    .forEach(button => {
 
-            button.addEventListener("click", () => {
+      button.addEventListener("click", () => {
 
-                const targetId = button.dataset.scrollTarget;
-                const target = document.getElementById(targetId);
+        const targetId = button.dataset.scrollTarget;
+        const target = document.getElementById(targetId);
 
-                if (!target) return;
+        if (!target) return;
 
-                target.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-
-                // Focus ไม่เปลี่ยน และไม่ซ่อนฟอร์ม
-            });
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
         });
 
-
-    // 2. Smooth Scroll เมนู
-    const navLinks = document.querySelectorAll(
-        '.app-nav .nav-link[href^="#"]'
-    );
-
-    navLinks.forEach(link => {
-
-        link.addEventListener("click", event => {
-
-            const targetId = link.getAttribute("href").substring(1);
-            const target = document.getElementById(targetId);
-
-            if (!target) return;
-
-            event.preventDefault();
-
-            target.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-
-            // ปิด Hamburger หลังเลือกเมนู
-            const navbar = document.getElementById("mainNavbar");
-
-            if (navbar && navbar.classList.contains("show")) {
-                bootstrap.Collapse
-                    .getOrCreateInstance(navbar)
-                    .hide();
-            }
-
-        });
-
+        // Focus ไม่เปลี่ยน และไม่ซ่อนฟอร์ม
+      });
     });
 
 
-    // 3. Active Menu
-    const sections = document.querySelectorAll(
-        "#portfolios-section, #portfolio-items-section"
-    );
+  // 2. Smooth Scroll เมนู
+  const navLinks = document.querySelectorAll(
+    '.app-nav .nav-link[href^="#"]'
+  );
 
-    const observer = new IntersectionObserver(entries => {
+  navLinks.forEach(link => {
 
-        entries.forEach(entry => {
+    link.addEventListener("click", event => {
 
-            if (!entry.isIntersecting) return;
+      const targetId = link.getAttribute("href").substring(1);
+      const target = document.getElementById(targetId);
 
-            navLinks.forEach(link => {
+      if (!target) return;
 
-                const isActive =
-                    link.getAttribute("href") ===
-                    "#" + entry.target.id;
+      event.preventDefault();
 
-                link.classList.toggle("active", isActive);
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
 
-            });
+      // ปิด Hamburger หลังเลือกเมนู
+      const navbar = document.getElementById("mainNavbar");
 
-        });
+      if (navbar && navbar.classList.contains("show")) {
+        bootstrap.Collapse
+          .getOrCreateInstance(navbar)
+          .hide();
+      }
 
-    }, {
-        rootMargin: "-120px 0px -55% 0px"
     });
 
-    sections.forEach(section => observer.observe(section));
+  });
+
+
+  // 3. Active Menu
+  const sections = document.querySelectorAll(
+    "#portfolios-section, #portfolio-items-section"
+  );
+
+  const observer = new IntersectionObserver(entries => {
+
+    entries.forEach(entry => {
+
+      if (!entry.isIntersecting) return;
+
+      navLinks.forEach(link => {
+
+        const isActive =
+          link.getAttribute("href") ===
+          "#" + entry.target.id;
+
+        link.classList.toggle("active", isActive);
+
+      });
+
+    });
+
+  }, {
+    rootMargin: "-120px 0px -55% 0px"
+  });
+
+  sections.forEach(section => observer.observe(section));
 
 }
 
 
 // รองรับกรณีโหลด JavaScript ก่อนหรือหลัง DOM
 if (document.readyState === "loading") {
-    document.addEventListener(
-        "DOMContentLoaded",
-        initializePowerUpNavigation
-    );
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializePowerUpNavigation
+  );
 } else {
-    initializePowerUpNavigation();
+  initializePowerUpNavigation();
 }
 
 
@@ -752,6 +752,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 3. ฟังก์ชันตรวจสอบ JSON และ Schema
+
   function validateJSONInput() {
     hideMessages();
     if (btnImport) btnImport.disabled = true;
@@ -765,45 +766,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const rawText = textarea ? textarea.value.trim() : '';
     if (!rawText) {
-      showError('ข้อมูลในช่อง Textarea ว่างเปล่า กรุณาวาง JSON หรืออัปโหลดไฟล์');
+      showError('กรุณาวาง JSON หรืออัปโหลดไฟล์');
       return null;
     }
 
-    let item;
-    try {
-      item = JSON.parse(rawText);
-    } catch (err) {
-      showError('รูปแบบ JSON ไม่ถูกต้อง (Syntax Error: ตรวจสอบเครื่องหมายปีกกาหรือเครื่องหมายคำพูด)');
+    // ตรวจสอบ JSON Wrapper ด้วย Issue #27
+    const result = validatePortfolioItemJson(rawText);
+
+    if (!result.valid) {
+      showError(result.errors.join(' | '));
       return null;
     }
 
-    if (typeof item !== 'object' || item === null || Array.isArray(item)) {
-      showError('Schema ไม่ถูกต้อง: ข้อมูลหลักต้องเป็น JSON Object ({ ... })');
-      return null;
-    }
+    const wrapper = result.data;
+    const item = wrapper.item;
 
-    if (!item.id || typeof item.id !== 'string') {
-      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "id" (ต้องมีและเป็นข้อความ)');
-      return null;
-    }
-    if (!item.title || typeof item.title !== 'string') {
-      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "title" (ต้องมีและเป็นข้อความ)');
-      return null;
-    }
-    if (!Array.isArray(item.skills) || item.skills.length === 0) {
-      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "skills" (ต้องเป็น Array และมีทักษะอย่างน้อย 1 ตัว)');
-      return null;
-    }
-
+    // ตรวจสอบข้อมูลซ้ำใน Portfolio ปลายทาง
     const storageKey = `portfolio_${portfolioId}_items`;
     const existingItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const isDuplicate = existingItems.some(existing => existing.id === item.id);
-    if (isDuplicate) {
-      showError(`Item นี้ (id: "${item.id}") ถูก import เข้า Portfolio นี้ไปแล้ว`);
+
+    if (existingItems.some(existing => existing.id === item.id)) {
+      showError(`Item นี้ (id: "${item.id}") ถูก import แล้ว`);
       return null;
     }
 
-    return item;
+    // ตรวจสอบ exchangeId ซ้ำ
+    if (existingItems.some(existing => existing.exchangeId === wrapper.exchangeId)) {
+      showError(`exchangeId "${wrapper.exchangeId}" ถูกใช้งานแล้ว`);
+      return null;
+    }
+
+    // เก็บ exchangeId ไว้กับ Item เพื่อใช้ตรวจสอบในครั้งต่อไป
+    return {
+      ...item,
+      exchangeId: wrapper.exchangeId
+    };
   }
 
   // 4. ปุ่ม Preview (ใช้ textContent ป้องกัน XSS)
@@ -855,8 +852,18 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnImport) btnImport.addEventListener('click', performImport);
   if (btnRetry) btnRetry.addEventListener('click', performImport);
 
+  // ยกเลิก Preview เมื่อเปลี่ยน Portfolio ปลายทาง
+  if (targetPortSelect) {
+    targetPortSelect.addEventListener('change', () => {
+      verifiedItemData = null;
+      if (btnImport) btnImport.disabled = true;
+      if (previewBox) previewBox.classList.add('d-none');
+    });
+  }
+
   if (textarea) {
     textarea.addEventListener('input', () => {
+      verifiedItemData = null;
       if (btnImport) btnImport.disabled = true;
       if (previewBox) previewBox.classList.add('d-none');
     });
