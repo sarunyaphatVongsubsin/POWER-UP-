@@ -19,103 +19,83 @@
 <body>
     <!-- top navbar -->
     <header class="site-header">
-    <div class="container-xl">
-        <nav class="navbar navbar-expand-lg app-nav">
+        <div class="container-xl">
+            <nav class="navbar navbar-expand-lg app-nav">
 
-            <!-- Brand -->
-            <a class="navbar-brand brand-link"
-               href="index.html"
-               aria-label="POWER UP Home">
+                <!-- Brand -->
+                <a class="navbar-brand brand-link" href="index.html" aria-label="POWER UP Home">
 
-                <img src="assets/logo.png"
-                     alt="POWER UP Logo"
-                     class="brand-logo">
+                    <img src="assets/logo.png" alt="POWER UP Logo" class="brand-logo">
 
-                <span class="brand-copy">
-                    <strong>POWER UP!</strong>
-                    <small>Learning Portfolio</small>
-                </span>
-            </a>
+                    <span class="brand-copy">
+                        <strong>POWER UP!</strong>
+                        <small>Learning Portfolio</small>
+                    </span>
+                </a>
 
-            <!-- Mobile actions -->
-            <div class="mobile-nav-actions">
-                <button class="btn btn-accent nav-add-btn"
-                        type="button"
-                        data-scroll-target="add-item-section">
-                    + Add Item
-                </button>
-
-                <button class="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#mainNavbar"
-                        aria-controls="mainNavbar"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-            </div>
-
-            <!-- Navigation -->
-            <div class="collapse navbar-collapse" id="mainNavbar">
-
-                <ul class="navbar-nav mx-auto">
-
-                    <li class="nav-item">
-                        <a class="nav-link active"
-                           href="#portfolios-section">
-                            Portfolios
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           href="#portfolio-items-section">
-                            Portfolio Items
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           href="booth.html">
-                            Booth
-                        </a>
-                    </li>
-
-                </ul>
-
-                <!-- Desktop actions -->
-                <div class="desktop-nav-actions">
-
-                    <button class="btn btn-accent nav-add-btn"
-                            type="button"
-                            data-scroll-target="add-item-section">
+                <!-- Mobile actions -->
+                <div class="mobile-nav-actions">
+                    <button class="btn btn-accent nav-add-btn" type="button" data-scroll-target="add-item-section">
                         + Add Item
                     </button>
 
-                    <button id="btn-reset-data"
-                            class="btn btn-reset"
-                            type="button">
-                        <i class="bi bi-trash3"></i>
-                        Reset Data
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
                     </button>
-
                 </div>
 
-                <!-- Mobile Reset -->
-                <div class="mobile-reset">
-                    <button type="button"
-                            class="btn btn-reset"
-                            data-bs-toggle="modal"
+                <!-- Navigation -->
+                <div class="collapse navbar-collapse" id="mainNavbar">
+
+                    <ul class="navbar-nav mx-auto">
+
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#portfolios-section">
+                                Portfolios
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#portfolio-items-section">
+                                Portfolio Items
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="booth.html">
+                                Booth
+                            </a>
+                        </li>
+
+                    </ul>
+
+                    <!-- Desktop actions -->
+                    <div class="desktop-nav-actions">
+
+                        <button class="btn btn-accent nav-add-btn" type="button" data-scroll-target="add-item-section">
+                            + Add Item
+                        </button>
+
+                        <button id="btn-reset-data" class="btn btn-reset" type="button">
+                            <i class="bi bi-trash3"></i>
+                            Reset Data
+                        </button>
+
+                    </div>
+
+                    <!-- Mobile Reset -->
+                    <div class="mobile-reset">
+                        <button type="button" class="btn btn-reset" data-bs-toggle="modal"
                             data-bs-target="#reset-data-modal">
-                        Reset Data
-                    </button>
-                </div>
+                            Reset Data
+                        </button>
+                    </div>
 
-            </div>
-        </nav>
-    </div>
-</header>
+                </div>
+            </nav>
+        </div>
+    </header>
 
 
     <!-- main content -->
@@ -212,20 +192,13 @@
                             <h2 class="h4 fw-bold mb-0">Portfolio Items</h2>
                             <span id="portfolio-items-count" class="badge rounded-pill">0</span>
                         </div>
-                        <button type="button"
-                                class="btn btn-outline-secondary rounded-pill px-3"
-                                id="btn-import-item">
-                                <i class="bi bi-upload"></i>
-                                Import Item
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" id="btn-import-item">
+                            <i class="bi bi-upload"></i>
+                            Import Item
                         </button>
-                        <button
-                            class="btn btn-sm btn-outline-secondary rounded-pill px-3 toggle-items-btn"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#portfolio-items-collapse"
-                            aria-expanded="true"
-                            aria-controls="portfolio-items-collapse"
-                        >
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 toggle-items-btn"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#portfolio-items-collapse"
+                            aria-expanded="true" aria-controls="portfolio-items-collapse">
                             <span class="when-opened">▲ Hide Items</span>
                             <span class="when-closed">▼ Show Items</span>
                         </button>
@@ -401,71 +374,141 @@
             </section>
         </div>
         <!-- === ส่วน Import Portfolio Item (Issue #25) === -->
-<section id="import-section" class="card shadow-sm p-4 mb-4" style="border-radius: 12px; border-color: #f3c6d3;">
-  <h4 class="mb-3" style="color: #6c5ce7; font-weight: 600;">
-    <i class="bi bi-file-earmark-arrow-down"></i> Import Portfolio Item via File or Textarea
-  </h4>
+        <section id="import-section" class="card shadow-sm p-4 mb-4"
+            style="border-radius: 12px; border-color: #f3c6d3;">
+            <h4 class="mb-3" style="color: #6c5ce7; font-weight: 600;">
+                <i class="bi bi-file-earmark-arrow-down"></i> Import Portfolio Item via File or Textarea
+            </h4>
 
-  <!-- 1. Dropdown เลือก Portfolio ปลายทาง & ปุ่มดาวน์โหลดตัวอย่าง -->
-  <div class="row g-3 mb-3 align-items-center">
-    <div class="col-md-7">
-      <label for="import-target-port" class="form-label fw-bold">เลือก Portfolio ปลายทาง:</label>
-      <select id="import-target-port" class="form-select">
-        <option value="">-- กรุณาเลือก Portfolio --</option>
-        <option value="portfolio-1">Napat Wattanapong (Ploy)</option>
-        <option value="portfolio-2">Thanawat Srisuk (Ton)</option>
-      </select>
-    </div>
-    <div class="col-md-5 text-md-end mt-4">
-      <button type="button" id="btn-download-sample" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-download"></i> ดาวน์โหลดตัวอย่าง (sample-portfolio-1.json)
-      </button>
-    </div>
-  </div>
+            <!-- 1. Dropdown เลือก Portfolio ปลายทาง & ปุ่มดาวน์โหลดตัวอย่าง -->
+            <div class="row g-3 mb-3 align-items-center">
+                <div class="col-md-7">
+                    <label for="import-target-port" class="form-label fw-bold">เลือก Portfolio ปลายทาง:</label>
+                    <select id="import-target-port" class="form-select">
+                        <option value="">-- กรุณาเลือก Portfolio --</option>
+                        <option value="portfolio-1">Napat Wattanapong (Ploy)</option>
+                        <option value="portfolio-2">Thanawat Srisuk (Ton)</option>
+                    </select>
+                </div>
+                <div class="col-md-5 text-md-end mt-4">
+                    <button type="button" id="btn-download-sample" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-download"></i> ดาวน์โหลดตัวอย่าง (sample-portfolio-1.json)
+                    </button>
+                </div>
+            </div>
 
-  <!-- 2. ปุ่มเลือกไฟล์ .json (และ Drag & Drop) -->
-  <div class="mb-3">
-    <label class="form-label fw-bold">อัปโหลดไฟล์ JSON:</label>
-    <div id="import-drop-zone" class="border border-2 border-dashed rounded p-3 text-center bg-light" style="cursor: pointer;">
-      <p class="mb-1 text-muted">ลากและวางไฟล์ <strong>.json</strong> มาที่นี่ หรือคลิกเพื่อเลือกไฟล์จากเครื่อง</p>
-      <input type="file" id="import-file-input" accept=".json,application/json" class="form-control form-control-sm w-50 mx-auto" />
-    </div>
-  </div>
+            <!-- 2. ปุ่มเลือกไฟล์ .json (และ Drag & Drop) -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">อัปโหลดไฟล์ JSON:</label>
+                <div id="import-drop-zone" class="border border-2 border-dashed rounded p-3 text-center bg-light"
+                    style="cursor: pointer;">
+                    <p class="mb-1 text-muted">ลากและวางไฟล์ <strong>.json</strong> มาที่นี่
+                        หรือคลิกเพื่อเลือกไฟล์จากเครื่อง</p>
+                    <input type="file" id="import-file-input" accept=".json,application/json"
+                        class="form-control form-control-sm w-50 mx-auto" />
+                </div>
+            </div>
 
-  <!-- 3. Textarea สำหรับวางหรือแก้ไข JSON -->
-  <div class="mb-3">
-    <label for="import-textarea" class="form-label fw-bold">ข้อมูล JSON (วางข้อความหรือตรวจสอบก่อน Import):</label>
-    <textarea id="import-textarea" class="form-control font-monospace text-muted" rows="6" placeholder="วางโค้ด JSON ของ Item ที่นี่..."></textarea>
-  </div>
+            <!-- 3. Textarea สำหรับวางหรือแก้ไข JSON -->
+            <div class="mb-3">
+                <label for="import-textarea" class="form-label fw-bold">ข้อมูล JSON (วางข้อความหรือตรวจสอบก่อน
+                    Import):</label>
+                <textarea id="import-textarea" class="form-control font-monospace text-muted" rows="6"
+                    placeholder="วางโค้ด JSON ของ Item ที่นี่..."></textarea>
+            </div>
 
-  <!-- กล่องแสดง Error แบบละเอียด (ระบุฟิลด์ที่ผิด) -->
-  <div id="import-error-alert" class="alert alert-danger d-none py-2 px-3 mb-3" role="alert" style="font-size: 0.9rem;"></div>
+            <!-- กล่องแสดง Error แบบละเอียด (ระบุฟิลด์ที่ผิด) -->
+            <div id="import-error-alert" class="alert alert-danger d-none py-2 px-3 mb-3" role="alert"
+                style="font-size: 0.9rem;"></div>
 
-  <!-- กล่อง Preview ก่อนบันทึก (ใช้ textContent เท่านั้นเพื่อความปลอดภัย XSS) -->
-  <div id="import-preview-box" class="card bg-light border-0 p-3 mb-3 d-none" style="border-left: 4px solid #0984e3 !important;">
-    <h6 class="text-primary fw-bold mb-2">ตัวอย่างข้อมูลที่จะนำเข้า (Preview)</h6>
-    <p class="mb-1" style="font-size: 0.9rem;"><strong>รหัสผลงาน (id):</strong> <span id="prev-id"></span></p>
-    <p class="mb-1" style="font-size: 0.9rem;"><strong>ชื่อผลงาน (title):</strong> <span id="prev-title"></span></p>
-    <p class="mb-1" style="font-size: 0.9rem;"><strong>ประเภท (type):</strong> <span id="prev-type"></span></p>
-    <p class="mb-0" style="font-size: 0.9rem;"><strong>ทักษะ (skills):</strong> <span id="prev-skills"></span></p>
-  </div>
+            <!-- กล่อง Preview ก่อนบันทึก (ใช้ textContent เท่านั้นเพื่อความปลอดภัย XSS) -->
+            <div id="import-preview-box" class="card bg-light border-0 p-3 mb-3 d-none"
+                style="border-left: 4px solid #0984e3 !important;">
+                <h6 class="text-primary fw-bold mb-2">ตัวอย่างข้อมูลที่จะนำเข้า (Preview)</h6>
+                <p class="mb-1" style="font-size: 0.9rem;"><strong>รหัสผลงาน (id):</strong> <span id="prev-id"></span>
+                </p>
+                <p class="mb-1" style="font-size: 0.9rem;"><strong>ชื่อผลงาน (title):</strong> <span
+                        id="prev-title"></span></p>
+                <p class="mb-1" style="font-size: 0.9rem;"><strong>ประเภท (type):</strong> <span id="prev-type"></span>
+                </p>
+                <p class="mb-0" style="font-size: 0.9rem;"><strong>ทักษะ (skills):</strong> <span
+                        id="prev-skills"></span></p>
+            </div>
 
-  <!-- สถานะการบันทึก (กำลังบันทึก / สำเร็จ / ล้มเหลว + ปุ่มลองใหม่) -->
-  <div id="import-status-box" class="alert d-none py-2 px-3 mb-3" role="alert" style="font-size: 0.9rem;">
-    <span id="import-status-text"></span>
-    <button type="button" id="btn-retry-import" class="btn btn-sm btn-warning ms-2 py-0 d-none">ลองใหม่</button>
-  </div>
+            <!-- สถานะการบันทึก (กำลังบันทึก / สำเร็จ / ล้มเหลว + ปุ่มลองใหม่) -->
+            <div id="import-status-box" class="alert d-none py-2 px-3 mb-3" role="alert" style="font-size: 0.9rem;">
+                <span id="import-status-text"></span>
+                <button type="button" id="btn-retry-import"
+                    class="btn btn-sm btn-warning ms-2 py-0 d-none">ลองใหม่</button>
+            </div>
 
-  <!-- ปุ่มควบคุมการทำงาน: Preview และ Import -->
-  <div class="d-flex gap-2">
-    <button type="button" id="btn-preview-json" class="btn btn-info text-white btn-sm px-3">
-      <i class="bi bi-eye"></i> ตรวจสอบ & Preview
-    </button>
-    <button type="button" id="btn-confirm-import" class="btn btn-success btn-sm px-3" disabled>
-      <i class="bi bi-check-circle"></i> ยืนยัน Import
-    </button>
-  </div>
-</section>
+            <!-- ปุ่มควบคุมการทำงาน: Preview และ Import -->
+            <div class="d-flex gap-2">
+                <button type="button" id="btn-preview-json" class="btn btn-info text-white btn-sm px-3">
+                    <i class="bi bi-eye"></i> ตรวจสอบ & Preview
+                </button>
+                <button type="button" id="btn-confirm-import" class="btn btn-success btn-sm px-3" disabled>
+                    <i class="bi bi-check-circle"></i> ยืนยัน Import
+                </button>
+            </div>
+        </section>
+        <!-- === ส่วน Export My Portfolio & Submission Helper (Issue #26) === -->
+        <section id="export-section" class="card shadow-sm p-4 mb-4"
+            style="border-radius: 12px; border-color: #b8e994;">
+            <h4 class="mb-3" style="color: #009432; font-weight: 600;">
+                <i class="bi bi-box-arrow-up"></i> Export My Portfolio & Submission Helper
+            </h4>
+
+            <!-- เลือก Portfolio ที่ต้องการ Export -->
+            <div class="mb-3">
+                <label for="export-source-port" class="form-label fw-bold">เลือก Portfolio ที่ต้องการ Export:</label>
+                <select id="export-source-port" class="form-select">
+                    <option value="">-- กรุณาเลือก Portfolio --</option>
+                    <option value="portfolio-1">Napat Wattanapong (Ploy)</option>
+                    <option value="portfolio-2">Thanawat Srisuk (Ton)</option>
+                </select>
+            </div>
+
+            <!-- Submission Checklist -->
+            <div class="card bg-light border-0 p-3 mb-3">
+                <h6 class="fw-bold mb-2">Submission Checklist (ตรวจสอบความพร้อมก่อนส่งงาน):</h6>
+                <ul class="list-unstyled mb-0" style="font-size: 0.92rem;">
+                    <li id="chk-imported-item" class="mb-1 text-danger">
+                        <span class="chk-icon">✗</span> มี Item จากเพื่อนต่างกลุ่มอย่างน้อย 1 รายการ
+                    </li>
+                    <li id="chk-reflection" class="mb-1 text-danger">
+                        <span class="chk-icon">✗</span> Item ที่นำเข้ามีข้อมูล Reflection ครบถ้วน
+                    </li>
+                    <li id="chk-evidence" class="mb-0 text-danger">
+                        <span class="chk-icon">✗</span> Item ที่นำเข้ามีหลักฐาน Evidence แนบอยู่
+                    </li>
+                </ul>
+            </div>
+
+            <!-- แจ้งเตือนสถานะการ Copy / Export -->
+            <div id="export-status-alert" class="alert alert-success d-none py-2 px-3 mb-3" role="alert"
+                style="font-size: 0.9rem;"></div>
+
+            <!-- ปุ่ม Export และ Copy JSON -->
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <button type="button" id="btn-export-json" class="btn btn-success btn-sm px-3" disabled>
+                    <i class="bi bi-download"></i> Export My Portfolio (my-portfolio.json)
+                </button>
+                <button type="button" id="btn-copy-json" class="btn btn-outline-secondary btn-sm px-3" disabled>
+                    <i class="bi bi-clipboard"></i> Copy JSON
+                </button>
+            </div>
+
+            <!-- ลิงก์ไป Peer Testing & Constructive Feedback Form -->
+            <div class="border-top pt-3 mt-2">
+                <p class="mb-1 fw-bold" style="font-size: 0.9rem;">แบบประเมินหลังการทดสอบ (Peer Testing):</p>
+                <a id="peer-testing-link" href="#peer-testing-form-url" target="_blank" rel="noopener noreferrer"
+                    class="btn btn-link p-0 text-decoration-none" style="font-size: 0.9rem;">
+                    <i class="bi bi-box-arrow-up-right"></i> Peer Testing & Constructive Feedback Form (Google Form -
+                    ใส่ URL เมื่อได้รับ)
+                </a>
+            </div>
+        </section>
     </main>
 
     <!-- scripts -->

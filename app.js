@@ -883,3 +883,134 @@ document.addEventListener('DOMContentLoaded', () => {
     if (statusBox) statusBox.classList.add('d-none');
   }
 });
+
+// === โค้ดระบบ Export My Portfolio & Submission Helper (Issue #26) ===
+document.addEventListener('DOMContentLoaded', () => {
+  const exportPortSelect = document.getElementById('export-source-port');
+  const chkImportedItem = document.getElementById('chk-imported-item');
+  const chkReflection = document.getElementById('chk-reflection');
+  const chkEvidence = document.getElementById('chk-evidence');
+  const btnExportJson = document.getElementById('btn-export-json');
+  const btnCopyJson = document.getElementById('btn-copy-json');
+  const exportAlert = document.getElementById('export-status-alert');
+
+  let currentExportPayload = null;
+
+  // ข้อมูลพื้นฐานของ Portfolio (อ้างอิงจากโครงสร้างไฟล์ตัวอย่างของกลุ่ม)
+  const basePortfolios = {
+    'portfolio-1': {
+      portfolioId: 'portfolio-1',
+      name: 'Napat Wattanapong (Ploy)',
+      whatIEnjoy: 'Designing user-friendly web interfaces, building interactive frontend applications, and collaborating on creative student tech projects.',
+      whatIveTried: 'HTML5, CSS3, Bootstrap 5, Vanilla JavaScript, Git/GitHub workflow, and Figma UI prototyping.',
+      whatImCuriousAbout: 'React.js, TypeScript, accessible web design (WCAG), and full-stack development with Node.js.'
+    },
+    'portfolio-2': {
+      portfolioId: 'portfolio-2',
+      name: 'Thanawat Srisuk (Ton)',
+      whatIEnjoy: 'Solving algorithmic problems, automating repetitive workflows with Python, and exploring data visualization.',
+      whatIveTried: 'Python scripting, C programming, basic SQL queries, data cleaning with Pandas, and command-line Git.',
+      whatImCuriousAbout: 'Machine learning fundamentals, RESTful API design, Docker containers, and cloud deployment.'
+    }
+  };
+
+  function updateChecklistItem(element, isPassed, text) {
+    if (!element) return;
+    element.className = isPassed ? 'mb-1 text-success fw-semibold' : 'mb-1 text-danger';
+    element.textContent = `${isPassed ? '✓' : '✗'} ${text}`;
+  }
+
+  function evaluatePortfolioChecklist(portfolioId) {
+    if (exportAlert) exportAlert.classList.add('d-none');
+    currentExportPayload = null;
+
+    if (!portfolioId || !basePortfolios[portfolioId]) {
+      updateChecklistItem(chkImportedItem, false, 'มี Item จากเพื่อนต่างกลุ่มอย่างน้อย 1 รายการ');
+      updateChecklistItem(chkReflection, false, 'Item ที่นำเข้ามีข้อมูล Reflection ครบถ้วน');
+      updateChecklistItem(chkEvidence, false, 'Item ที่นำเข้ามีหลักฐาน Evidence แนบอยู่');
+      if (btnExportJson) btnExportJson.disabled = true;
+      if (btnCopyJson) btnCopyJson.disabled = true;
+      return;
+    }
+
+    // ดึงรายการ Item ที่ถูก Import เก็บไว้ใน localStorage (จาก Issue #25)
+    const storageKey = `portfolio_${portfolioId}_items`;
+    const importedItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+    // 1. เช็คว่ามี Item อย่างน้อย 1 รายการหรือไม่
+    const hasImportedItem = importedItems.length >= 1;
+
+    // 2. เช็คว่า Item มี Reflection ครบหรือไม่
+    const hasCompleteReflection = hasImportedItem && importedItems.some(item => {
+      const r = item.reflection;
+      return r && r.whatIDid && r.whatILearned && r.challenge && r.nextStep;
+    });
+
+    // 3. เช็คว่า Item มี Evidence หรือไม่
+    const hasEvidence = hasImportedItem && importedItems.some(item => {
+      return Array.isArray(item.evidence) && item.evidence.length > 0;
+    });
+
+    updateChecklistItem(chkImportedItem, hasImportedItem, 'มี Item จากเพื่อนต่างกลุ่มอย่างน้อย 1 รายการ');
+    updateChecklistItem(chkReflection, hasCompleteReflection, 'Item ที่นำเข้ามีข้อมูล Reflection ครบถ้วน');
+    updateChecklistItem(chkEvidence, hasEvidence, 'Item ที่นำเข้ามีหลักฐาน Evidence แนบอยู่');
+
+    const isAllPassed = hasImportedItem && hasCompleteReflection && hasEvidence;
+
+    // เตรียมข้อมูลสำหรับ Export
+    currentExportPayload = {
+      ...basePortfolios[portfolioId],
+      exportedAt: new Date().toISOString(),
+      items: importedItems
+    };
+
+    // เปิดใช้งานปุ่ม Export เมื่อผ่านเกณฑ์ครบ (ปุ่ม Copy เปิดให้ใช้สำรองได้เมื่อมีข้อมูล)
+    if (btnExportJson) btnExportJson.disabled = !isAllPassed;
+    if (btnCopyJson) btnCopyJson.disabled = !hasImportedItem;
+  }
+
+  if (exportPortSelect) {
+    exportPortSelect.addEventListener('change', (e) => {
+      evaluatePortfolioChecklist(e.target.value);
+    });
+  }
+
+  // ปุ่ม Export ดาวน์โหลดไฟล์ชื่อ my-portfolio.json
+  if (btnExportJson) {
+    btnExportJson.addEventListener('click', () => {
+      if (!currentExportPayload) return;
+
+      const jsonString = JSON.stringify(currentExportPayload, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'my-portfolio.json';
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showExportMessage('ดาวน์โหลดไฟล์ my-portfolio.json เรียบร้อยแล้ว');
+    });
+  }
+
+  // ปุ่ม Copy JSON สำรอง
+  if (btnCopyJson) {
+    btnCopyJson.addEventListener('click', async () => {
+      if (!currentExportPayload) return;
+
+      const jsonString = JSON.stringify(currentExportPayload, null, 2);
+      try {
+        await navigator.clipboard.writeText(jsonString);
+        showExportMessage('คัดลอกข้อมูล JSON ลงคลิปบอร์ดเรียบร้อยแล้ว');
+      } catch (err) {
+        showExportMessage('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณากดปุ่ม Export แทน');
+      }
+    });
+  }
+
+  function showExportMessage(msg) {
+    if (!exportAlert) return;
+    exportAlert.textContent = msg;
+    exportAlert.classList.remove('d-none');
+  }
+});
