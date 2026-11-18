@@ -71,59 +71,97 @@ function validatePortfolioData(data) {
 }
 
 // ตรวจสอบข้อมูล Item รวมถึงวันที่ Skills, Reflection และ Evidence
-function validatePortfolioItemData(data) {
-  if (!data || typeof data !== "object" || Array.isArray(data))
+
+function validatePortfolioItemData(data, level = "submission") {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
     return ["Portfolio item must be an object"];
+  }
+
+  if (!["booth", "submission"].includes(level)) {
+    return ["Invalid validation level"];
+  }
 
   const errors = [];
+
+  // Required fields at booth level
   ["id", "title", "type", "date", "role", "description"].forEach(field => {
-    if (typeof data[field] !== "string" || !data[field].trim())
+    if (typeof data[field] !== "string" || !data[field].trim()) {
       errors.push(`${field} is required`);
+    }
   });
 
-  // ตรวจสอบวันที่จริงในรูปแบบ YYYY-MM-DD
+  // Validate date
   if (typeof data.date === "string" && data.date.trim()) {
     const date = new Date(data.date);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date) ||
-        Number.isNaN(date.getTime()) ||
-        date.toISOString().slice(0, 10) !== data.date) {
+
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(data.date) ||
+      Number.isNaN(date.getTime()) ||
+      date.toISOString().slice(0, 10) !== data.date
+    ) {
       errors.push("Date must be a valid YYYY-MM-DD date");
     }
   }
 
-  if (!Array.isArray(data.skills) ||
-      !data.skills.every(skill => typeof skill === "string"))
-    errors.push("Skills must be an array of strings");
-
-  if (!data.reflection || typeof data.reflection !== "object" ||
-      Array.isArray(data.reflection)) {
-    errors.push("Reflection must be an object");
-  } else {
-    ["whatIDid", "whatILearned", "challenge", "nextStep"].forEach(field => {
-      if (typeof data.reflection[field] !== "string")
-        errors.push(`Reflection ${field} must be a string`);
-    });
+  // Validate skills
+  if (
+    !Array.isArray(data.skills) ||
+    !data.skills.every(skill =>
+      typeof skill === "string" && skill.trim()
+    )
+  ) {
+    errors.push("Skills must be an array of non-empty strings");
   }
 
-  if (!Array.isArray(data.evidence)) {
-    errors.push("Evidence must be an array");
-  } else {
-    data.evidence.forEach(url => {
-      if (typeof url !== "string") {
-        errors.push("Evidence URL must be a string");
-        return;
-      }
-      try {
-        const parsed = new URL(url);
-        if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname)
+  // Additional requirements at submission level
+  if (level === "submission") {
+    if (
+      !data.reflection ||
+      typeof data.reflection !== "object" ||
+      Array.isArray(data.reflection)
+    ) {
+      errors.push("Reflection must be an object");
+    } else {
+      ["whatIDid", "whatILearned", "challenge", "nextStep"].forEach(field => {
+        if (
+          typeof data.reflection[field] !== "string" ||
+          !data.reflection[field].trim()
+        ) {
+          errors.push(
+            `Reflection ${field} is required and must be a non-empty string`
+          );
+        }
+      });
+    }
+
+    if (!Array.isArray(data.evidence) || data.evidence.length === 0) {
+      errors.push("Evidence must be a non-empty array");
+    } else {
+      data.evidence.forEach(url => {
+        if (typeof url !== "string") {
+          errors.push("Evidence URL must be a string");
+          return;
+        }
+
+        try {
+          const parsed = new URL(url);
+
+          if (
+            !["http:", "https:"].includes(parsed.protocol) ||
+            !parsed.hostname
+          ) {
+            errors.push(`Invalid Evidence URL: ${url}`);
+          }
+        } catch {
           errors.push(`Invalid Evidence URL: ${url}`);
-      } catch {
-        errors.push(`Invalid Evidence URL: ${url}`);
-      }
-    });
+        }
+      });
+    }
   }
+
   return errors;
 }
+
 
 // ตรวจสอบข้อมูลทุก Portfolio และข้ามรายการที่ไม่ผ่าน
 function sanitizePortfolios(list, source) {
@@ -551,7 +589,7 @@ async function initializeApp() {
       evidence: splitList(getValue("item-evidence"))
     };
 
-    const errors = validatePortfolioItemData(newItem);
+    const errors = validatePortfolioItemData(newItem, "booth");
     if (errors.length) return showStatus(errors[0], "danger");
 
     if (!Array.isArray(target.items)) target.items = [];
@@ -574,102 +612,102 @@ document.addEventListener("DOMContentLoaded", initializeApp);
 
 function initializePowerUpNavigation() {
 
-    // 1. Add Item: Scroll ไปยังฟอร์ม
-    document.querySelectorAll("[data-scroll-target]")
-        .forEach(button => {
+  // 1. Add Item: Scroll ไปยังฟอร์ม
+  document.querySelectorAll("[data-scroll-target]")
+    .forEach(button => {
 
-            button.addEventListener("click", () => {
+      button.addEventListener("click", () => {
 
-                const targetId = button.dataset.scrollTarget;
-                const target = document.getElementById(targetId);
+        const targetId = button.dataset.scrollTarget;
+        const target = document.getElementById(targetId);
 
-                if (!target) return;
+        if (!target) return;
 
-                target.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-
-                // Focus ไม่เปลี่ยน และไม่ซ่อนฟอร์ม
-            });
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
         });
 
-
-    // 2. Smooth Scroll เมนู
-    const navLinks = document.querySelectorAll(
-        '.app-nav .nav-link[href^="#"]'
-    );
-
-    navLinks.forEach(link => {
-
-        link.addEventListener("click", event => {
-
-            const targetId = link.getAttribute("href").substring(1);
-            const target = document.getElementById(targetId);
-
-            if (!target) return;
-
-            event.preventDefault();
-
-            target.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-
-            // ปิด Hamburger หลังเลือกเมนู
-            const navbar = document.getElementById("mainNavbar");
-
-            if (navbar && navbar.classList.contains("show")) {
-                bootstrap.Collapse
-                    .getOrCreateInstance(navbar)
-                    .hide();
-            }
-
-        });
-
+        // Focus ไม่เปลี่ยน และไม่ซ่อนฟอร์ม
+      });
     });
 
 
-    // 3. Active Menu
-    const sections = document.querySelectorAll(
-        "#portfolios-section, #portfolio-items-section"
-    );
+  // 2. Smooth Scroll เมนู
+  const navLinks = document.querySelectorAll(
+    '.app-nav .nav-link[href^="#"]'
+  );
 
-    const observer = new IntersectionObserver(entries => {
+  navLinks.forEach(link => {
 
-        entries.forEach(entry => {
+    link.addEventListener("click", event => {
 
-            if (!entry.isIntersecting) return;
+      const targetId = link.getAttribute("href").substring(1);
+      const target = document.getElementById(targetId);
 
-            navLinks.forEach(link => {
+      if (!target) return;
 
-                const isActive =
-                    link.getAttribute("href") ===
-                    "#" + entry.target.id;
+      event.preventDefault();
 
-                link.classList.toggle("active", isActive);
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
 
-            });
+      // ปิด Hamburger หลังเลือกเมนู
+      const navbar = document.getElementById("mainNavbar");
 
-        });
+      if (navbar && navbar.classList.contains("show")) {
+        bootstrap.Collapse
+          .getOrCreateInstance(navbar)
+          .hide();
+      }
 
-    }, {
-        rootMargin: "-120px 0px -55% 0px"
     });
 
-    sections.forEach(section => observer.observe(section));
+  });
+
+
+  // 3. Active Menu
+  const sections = document.querySelectorAll(
+    "#portfolios-section, #portfolio-items-section"
+  );
+
+  const observer = new IntersectionObserver(entries => {
+
+    entries.forEach(entry => {
+
+      if (!entry.isIntersecting) return;
+
+      navLinks.forEach(link => {
+
+        const isActive =
+          link.getAttribute("href") ===
+          "#" + entry.target.id;
+
+        link.classList.toggle("active", isActive);
+
+      });
+
+    });
+
+  }, {
+    rootMargin: "-120px 0px -55% 0px"
+  });
+
+  sections.forEach(section => observer.observe(section));
 
 }
 
 
 // รองรับกรณีโหลด JavaScript ก่อนหรือหลัง DOM
 if (document.readyState === "loading") {
-    document.addEventListener(
-        "DOMContentLoaded",
-        initializePowerUpNavigation
-    );
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializePowerUpNavigation
+  );
 } else {
-    initializePowerUpNavigation();
+  initializePowerUpNavigation();
 }
 
 
@@ -687,6 +725,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRetry = document.getElementById('btn-retry-import');
   const btnPreview = document.getElementById('btn-preview-json');
   const btnImport = document.getElementById('btn-confirm-import');
+  const btnOpenImport = document.getElementById('btn-import-item');
+
+  if (btnOpenImport) {
+    btnOpenImport.addEventListener('click', () => {
+      const importSection = document.getElementById('import-section');
+
+      if (importSection) {
+        importSection.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  }
 
   let verifiedItemData = null;
 
@@ -694,20 +746,32 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnDownloadSample) {
     btnDownloadSample.addEventListener('click', () => {
       const sampleItem = {
-        id: "item-sample-999",
-        title: "Sample Portfolio Item",
-        type: "Course Assignment",
-        date: "2026-11-18",
-        role: "Developer",
-        description: "ตัวอย่างรายละเอียดผลงานสำหรับการทดสอบระบบ Import",
-        skills: ["JavaScript", "Bootstrap 5", "JSON Schema"],
-        reflection: {
-          whatIDid: "พัฒนาฟังก์ชันนำเข้าข้อมูลผลงาน",
-          whatILearned: "การตรวจสอบโครงสร้าง JSON และการจัดการ Error",
-          challenge: "การป้องกันช่องโหว่ XSS และการตรวจสอบข้อมูลซ้ำ",
-          nextStep: "เชื่อมโยงกับระบบ Reflection"
+        schema: "powerup-portfolio-item",
+        version: 1,
+        exchangeId: "sample-exchange-999",
+        issuedAt: new Date().toISOString(),
+        source: {
+          group: "Sample Group",
+          booth: "Sample Booth",
+          challenge: "Sample Challenge",
+          host: "Sample Host"
         },
-        evidence: ["https://github.com/example/repo"]
+        item: {
+          id: "item-sample-999",
+          title: "Sample Portfolio Item",
+          type: "Course Assignment",
+          date: "2026-11-18",
+          role: "Developer",
+          description: "ตัวอย่างรายละเอียดผลงานสำหรับการทดสอบระบบ Import",
+          skills: ["JavaScript", "Bootstrap 5", "JSON Schema"],
+          reflection: {
+            whatIDid: "พัฒนาฟังก์ชันนำเข้าข้อมูลผลงาน",
+            whatILearned: "การตรวจสอบโครงสร้าง JSON และการจัดการ Error",
+            challenge: "การป้องกันช่องโหว่ XSS และการตรวจสอบข้อมูลซ้ำ",
+            nextStep: "เชื่อมโยงกับระบบ Reflection"
+          },
+          evidence: ["https://github.com/example/repo"]
+        }
       };
 
       const blob = new Blob([JSON.stringify(sampleItem, null, 2)], { type: 'application/json' });
@@ -752,6 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 3. ฟังก์ชันตรวจสอบ JSON และ Schema
+
   function validateJSONInput() {
     hideMessages();
     if (btnImport) btnImport.disabled = true;
@@ -765,45 +830,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const rawText = textarea ? textarea.value.trim() : '';
     if (!rawText) {
-      showError('ข้อมูลในช่อง Textarea ว่างเปล่า กรุณาวาง JSON หรืออัปโหลดไฟล์');
+      showError('กรุณาวาง JSON หรืออัปโหลดไฟล์');
       return null;
     }
 
-    let item;
-    try {
-      item = JSON.parse(rawText);
-    } catch (err) {
-      showError('รูปแบบ JSON ไม่ถูกต้อง (Syntax Error: ตรวจสอบเครื่องหมายปีกกาหรือเครื่องหมายคำพูด)');
+    // ตรวจสอบ JSON Wrapper ด้วย Issue #27
+    // รวบรวม exchangeId ที่มีอยู่จากทุก Portfolio
+    const existingExchangeIds = [];
+
+    Object.keys(localStorage)
+      .filter(key => key.startsWith('portfolio_') && key.endsWith('_items'))
+      .forEach(key => {
+        try {
+          const items = JSON.parse(localStorage.getItem(key) || '[]');
+
+          if (Array.isArray(items)) {
+            items.forEach(existing => {
+              if (existing.exchangeId) {
+                existingExchangeIds.push(existing.exchangeId);
+              }
+            });
+          }
+        } catch (error) {
+          console.error(`Cannot read ${key}:`, error);
+        }
+      });
+
+    // ตรวจสอบ JSON พร้อมเช็กรหัสซ้ำ
+    const result = validatePortfolioItemJson(rawText, existingExchangeIds);
+
+    if (!result.valid) {
+      showError(result.errors.join(' | '));
       return null;
     }
 
-    if (typeof item !== 'object' || item === null || Array.isArray(item)) {
-      showError('Schema ไม่ถูกต้อง: ข้อมูลหลักต้องเป็น JSON Object ({ ... })');
-      return null;
-    }
+    const wrapper = result.data;
+    const item = wrapper.item;
 
-    if (!item.id || typeof item.id !== 'string') {
-      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "id" (ต้องมีและเป็นข้อความ)');
-      return null;
-    }
-    if (!item.title || typeof item.title !== 'string') {
-      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "title" (ต้องมีและเป็นข้อความ)');
-      return null;
-    }
-    if (!Array.isArray(item.skills) || item.skills.length === 0) {
-      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "skills" (ต้องเป็น Array และมีทักษะอย่างน้อย 1 ตัว)');
-      return null;
-    }
-
+    // ตรวจสอบข้อมูลซ้ำใน Portfolio ปลายทาง
     const storageKey = `portfolio_${portfolioId}_items`;
     const existingItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const isDuplicate = existingItems.some(existing => existing.id === item.id);
-    if (isDuplicate) {
-      showError(`Item นี้ (id: "${item.id}") ถูก import เข้า Portfolio นี้ไปแล้ว`);
+
+    if (existingItems.some(existing => existing.id === item.id)) {
+      showError(`Item นี้ (id: "${item.id}") ถูก import แล้ว`);
       return null;
     }
 
-    return item;
+    // ตรวจสอบ exchangeId ซ้ำ
+    if (existingItems.some(existing => existing.exchangeId === wrapper.exchangeId)) {
+      showError(`exchangeId "${wrapper.exchangeId}" ถูกใช้งานแล้ว`);
+      return null;
+    }
+
+    // เก็บ exchangeId ไว้กับ Item เพื่อใช้ตรวจสอบในครั้งต่อไป
+    return {
+      ...item,
+      exchangeId: wrapper.exchangeId
+    };
   }
 
   // 4. ปุ่ม Preview (ใช้ textContent ป้องกัน XSS)
@@ -824,8 +907,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 5. ปุ่มยืนยัน Import
+
   async function performImport() {
     if (!verifiedItemData) return;
+
     const portfolioId = targetPortSelect ? targetPortSelect.value : '';
 
     if (btnImport) btnImport.disabled = true;
@@ -835,10 +920,42 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await new Promise(res => setTimeout(res, 700));
 
+      // 1. บันทึกลงรายการ Portfolio หลัก
+      const portfolios = JSON.parse(localStorage.getItem('portfolios') || '[]');
+
+      const targetPortfolio = portfolios.find(
+        portfolio => portfolio.portfolioId === portfolioId
+      );
+
+      if (!targetPortfolio) {
+        throw new Error('ไม่พบ Portfolio ปลายทาง');
+      }
+
+      if (!Array.isArray(targetPortfolio.items)) {
+        targetPortfolio.items = [];
+      }
+
+      // ป้องกันการ Import ID ซ้ำ
+      const duplicate = targetPortfolio.items.some(
+        item => item.id === verifiedItemData.id
+      );
+
+      if (duplicate) {
+        throw new Error('Portfolio Item นี้มีอยู่แล้ว');
+      }
+
+      targetPortfolio.items.push(verifiedItemData);
+
+      localStorage.setItem('portfolios', JSON.stringify(portfolios));
+
+      // 2. บันทึกลง Storage แยก เพื่อรองรับระบบเดิม
       const storageKey = `portfolio_${portfolioId}_items`;
       const existingItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      existingItems.push(verifiedItemData);
-      localStorage.setItem(storageKey, JSON.stringify(existingItems));
+
+      if (!existingItems.some(item => item.id === verifiedItemData.id)) {
+        existingItems.push(verifiedItemData);
+        localStorage.setItem(storageKey, JSON.stringify(existingItems));
+      }
 
       showStatus('Import สำเร็จ! กำลังพาไปยังหน้า Reflection / Evidence...', 'alert-success');
 
@@ -847,16 +964,29 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1000);
 
     } catch (err) {
-      showStatus('บันทึกล้มเหลว: ไม่สามารถบันทึกข้อมูลลงระบบได้', 'alert-danger');
+      if (btnImport) btnImport.disabled = false;
+      console.error('Import error:', err);
+      showStatus(`บันทึกล้มเหลว: ${err.message}`, 'alert-danger');
       if (btnRetry) btnRetry.classList.remove('d-none');
     }
   }
 
+
   if (btnImport) btnImport.addEventListener('click', performImport);
   if (btnRetry) btnRetry.addEventListener('click', performImport);
 
+  // ยกเลิก Preview เมื่อเปลี่ยน Portfolio ปลายทาง
+  if (targetPortSelect) {
+    targetPortSelect.addEventListener('change', () => {
+      verifiedItemData = null;
+      if (btnImport) btnImport.disabled = true;
+      if (previewBox) previewBox.classList.add('d-none');
+    });
+  }
+
   if (textarea) {
     textarea.addEventListener('input', () => {
+      verifiedItemData = null;
       if (btnImport) btnImport.disabled = true;
       if (previewBox) previewBox.classList.add('d-none');
     });
@@ -957,6 +1087,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isAllPassed = hasImportedItem && hasCompleteReflection && hasEvidence;
 
+
     // เตรียมข้อมูลสำหรับ Export
     currentExportPayload = {
       ...basePortfolios[portfolioId],
@@ -964,46 +1095,101 @@ document.addEventListener('DOMContentLoaded', () => {
       items: importedItems
     };
 
-    // เปิดใช้งานปุ่ม Export เมื่อผ่านเกณฑ์ครบ (ปุ่ม Copy เปิดให้ใช้สำรองได้เมื่อมีข้อมูล)
+    // เปิดใช้งานปุ่มตาม Checklist
     if (btnExportJson) btnExportJson.disabled = !isAllPassed;
     if (btnCopyJson) btnCopyJson.disabled = !hasImportedItem;
   }
 
+  // ตรวจสอบ Portfolio ที่เลือก
   if (exportPortSelect) {
     exportPortSelect.addEventListener('change', (e) => {
       evaluatePortfolioChecklist(e.target.value);
     });
+
+    // ตรวจสอบข้อมูลเริ่มต้นเมื่อเปิดหน้าเว็บ
+    evaluatePortfolioChecklist(exportPortSelect.value);
   }
 
-  // ปุ่ม Export ดาวน์โหลดไฟล์ชื่อ my-portfolio.json
+  // สร้าง Portfolio Item Wrapper
+  function createExchangePayload() {
+    if (
+      !currentExportPayload ||
+      !Array.isArray(currentExportPayload.items) ||
+      currentExportPayload.items.length === 0
+    ) {
+      return null;
+    }
+
+    const item = currentExportPayload.items.find(item =>
+      item.reflection &&
+      item.evidence &&
+      item.evidence.length > 0
+    );
+
+    if (!item) return null;
+
+    return {
+      schema: "powerup-portfolio-item",
+      version: 1,
+      exchangeId: crypto.randomUUID(),
+      issuedAt: new Date().toISOString(),
+      source: {
+        group: "Group information not provided",
+        booth: "Booth information not provided",
+        challenge: "Challenge information not provided",
+        host: "Host information not provided"
+      },
+      item: item
+    };
+  }
+
+
+  // ปุ่ม Export ดาวน์โหลด Portfolio Item JSON
   if (btnExportJson) {
     btnExportJson.addEventListener('click', () => {
-      if (!currentExportPayload) return;
+      const payload = createExchangePayload();
 
-      const jsonString = JSON.stringify(currentExportPayload, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
+      if (!payload) return;
+
+      const jsonString = JSON.stringify(payload, null, 2);
+      const blob = new Blob([jsonString], {
+        type: 'application/json'
+      });
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
+
       a.href = url;
-      a.download = 'my-portfolio.json';
+      a.download = 'portfolio-item.json';
       a.click();
+
       URL.revokeObjectURL(url);
 
-      showExportMessage('ดาวน์โหลดไฟล์ my-portfolio.json เรียบร้อยแล้ว');
+      showExportMessage(
+        'ดาวน์โหลดไฟล์ portfolio-item.json เรียบร้อยแล้ว'
+      );
     });
   }
 
-  // ปุ่ม Copy JSON สำรอง
+  // ปุ่ม Copy JSON
   if (btnCopyJson) {
     btnCopyJson.addEventListener('click', async () => {
-      if (!currentExportPayload) return;
+      const payload = createExchangePayload();
 
-      const jsonString = JSON.stringify(currentExportPayload, null, 2);
+      if (!payload) return;
+
+      const jsonString = JSON.stringify(payload, null, 2);
+
       try {
         await navigator.clipboard.writeText(jsonString);
-        showExportMessage('คัดลอกข้อมูล JSON ลงคลิปบอร์ดเรียบร้อยแล้ว');
+
+        showExportMessage(
+          'คัดลอก Portfolio Item JSON เรียบร้อยแล้ว'
+        );
       } catch (err) {
-        showExportMessage('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณากดปุ่ม Export แทน');
+        showExportMessage(
+          'ไม่สามารถคัดลอก JSON ได้ กรุณาใช้ปุ่ม Export แทน'
+        );
       }
     });
   }
