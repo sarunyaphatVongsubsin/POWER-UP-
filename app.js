@@ -1,8 +1,6 @@
 "use strict";
 
-// ไฟล์ JSON ตัวอย่างและ Key สำหรับ Local Storage
-const SAMPLE_FILES = ["sample-portfolio-1.json", "sample-portfolio-2.json"];
-const PORTFOLIOS_KEY = "portfolios";
+// Portfolio data is stored on the PHP server; LocalStorage keeps only the selected Portfolio ID.
 const CURRENT_ID_KEY = "currentPortfolioId";
 
 // ---------- DATA MODEL ----------
@@ -19,7 +17,7 @@ function createReflection(data = {}) {
 
 // สร้าง Item พร้อมค่าเริ่มต้นและคัดลอก Array ป้องกันการอ้างอิงร่วม
 function createPortfolioItem(data = {}) {
-  const item = {
+  return {
     id: data.id || "",
     title: data.title || "",
     type: data.type || "",
@@ -28,18 +26,17 @@ function createPortfolioItem(data = {}) {
     description: data.description || "",
     skills: Array.isArray(data.skills) ? [...data.skills] : [],
     reflection: createReflection(data.reflection),
-    evidence: Array.isArray(data.evidence) ? [...data.evidence] : []
+    evidence: Array.isArray(data.evidence) ? [...data.evidence] : [],
+    // Optional metadata จาก Challenge/Import เก็บไว้ แม้หน้า Portfolio ไม่ได้แสดงผล
+    ...(typeof data.challengeId === "string" ? { challengeId: data.challengeId } : {}),
+    ...(typeof data.hostGroup === "string" ? { hostGroup: data.hostGroup } : {}),
+    ...(typeof data.category === "string" ? { category: data.category } : {}),
+    ...(typeof data.exchangeId === "string" ? { exchangeId: data.exchangeId } : {}),
+    ...(typeof data.issuedAt === "string" ? { issuedAt: data.issuedAt } : {}),
+    ...(typeof data.schemaVersion === "string" ? { schemaVersion: data.schemaVersion } : {}),
+    ...(typeof data.importStatus === "string" ? { importStatus: data.importStatus } : {}),
+    ...(typeof data.updatedAt === "string" ? { updatedAt: data.updatedAt } : {})
   };
-
-  // เก็บ Optional Metadata ที่รองรับไว้ แต่ไม่แสดงในหน้า Portfolio
-  ["schemaVersion", "challengeId", "hostGroup", "category", "importStatus"]
-    .forEach(field => {
-      if (Object.prototype.hasOwnProperty.call(data, field)) {
-        item[field] = data[field];
-      }
-    });
-
-  return item;
 }
 
 // สร้าง Portfolio และแปลง Item ทุกชิ้นให้เป็นรูปแบบมาตรฐาน
@@ -72,7 +69,7 @@ function validatePortfolioData(data) {
     errors.push("Items must be an array");
   } else {
     data.items.forEach((item, index) =>
-      validatePortfolioItemData(item, "booth").forEach(error =>
+      validatePortfolioItemData(item).forEach(error =>
         errors.push(`Item ${index + 1}: ${error}`)
       )
     );
@@ -81,277 +78,59 @@ function validatePortfolioData(data) {
 }
 
 // ตรวจสอบข้อมูล Item รวมถึงวันที่ Skills, Reflection และ Evidence
-
-function validatePortfolioItemData(data, level = "submission") {
-  if (!data || typeof data !== "object" || Array.isArray(data)) {
+function validatePortfolioItemData(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data))
     return ["Portfolio item must be an object"];
-  }
-
-  if (!["booth", "submission"].includes(level)) {
-    return ["Invalid validation level"];
-  }
 
   const errors = [];
-
-  // Required fields at booth level
   ["id", "title", "type", "date", "role", "description"].forEach(field => {
-    if (typeof data[field] !== "string" || !data[field].trim()) {
+    if (typeof data[field] !== "string" || !data[field].trim())
       errors.push(`${field} is required`);
-    }
   });
 
-  // Validate date
+  // ตรวจสอบวันที่จริงในรูปแบบ YYYY-MM-DD
   if (typeof data.date === "string" && data.date.trim()) {
     const date = new Date(data.date);
-
-    if (
-      !/^\d{4}-\d{2}-\d{2}$/.test(data.date) ||
-      Number.isNaN(date.getTime()) ||
-      date.toISOString().slice(0, 10) !== data.date
-    ) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date) ||
+        Number.isNaN(date.getTime()) ||
+        date.toISOString().slice(0, 10) !== data.date) {
       errors.push("Date must be a valid YYYY-MM-DD date");
     }
   }
 
-  // Validate skills
-  if (
-    !Array.isArray(data.skills) ||
-    !data.skills.every(skill =>
-      typeof skill === "string" && skill.trim()
-    )
-  ) {
-    errors.push("Skills must be an array of non-empty strings");
-  }
+  if (!Array.isArray(data.skills) ||
+      !data.skills.every(skill => typeof skill === "string"))
+    errors.push("Skills must be an array of strings");
 
-  // Additional requirements at submission level
-  if (level === "submission") {
-    if (
-      !data.reflection ||
-      typeof data.reflection !== "object" ||
-      Array.isArray(data.reflection)
-    ) {
-      errors.push("Reflection must be an object");
-    } else {
-      ["whatIDid", "whatILearned", "challenge", "nextStep"].forEach(field => {
-        if (
-          typeof data.reflection[field] !== "string" ||
-          !data.reflection[field].trim()
-        ) {
-          errors.push(
-            `Reflection ${field} is required and must be a non-empty string`
-          );
-        }
-      });
-    }
-
-    if (!Array.isArray(data.evidence) || data.evidence.length === 0) {
-      errors.push("Evidence must be a non-empty array");
-    } else {
-      data.evidence.forEach(url => {
-        if (typeof url !== "string") {
-          errors.push("Evidence URL must be a string");
-          return;
-        }
-
-        try {
-          const parsed = new URL(url);
-
-          if (
-            !["http:", "https:"].includes(parsed.protocol) ||
-            !parsed.hostname
-          ) {
-            errors.push(`Invalid Evidence URL: ${url}`);
-          }
-        } catch {
-          errors.push(`Invalid Evidence URL: ${url}`);
-        }
-      });
-    }
-  }
-
-  return errors;
-}
-
-// ---------- IMPORT VALIDATION (รวมจาก portfolio-item-validation.js) ----------
-
-const IMPORT_MAX_BYTES = 256 * 1024;
-const IMPORT_FIELD_LIMITS = {
-  id: 100,
-  title: 150,
-  type: 100,
-  role: 150,
-  description: 2000,
-  skill: 50,
-  reflection: 2000,
-  evidenceUrl: 2048,
-  optional: 100
-};
-
-// ตรวจสอบขนาดข้อความ JSON และโครงสร้าง Portfolio Item โดยตรง (ไม่มี Wrapper)
-function validatePortfolioItemJson(text) {
-  const errors = [];
-
-  if (typeof text !== "string" || !text.trim()) {
-    return { valid: false, errors: ["กรุณาระบุข้อมูล JSON"], data: null };
-  }
-
-  if (new Blob([text]).size > IMPORT_MAX_BYTES) {
-    return {
-      valid: false,
-      errors: [`ข้อมูล JSON มีขนาดเกิน ${IMPORT_MAX_BYTES / 1024} KB`],
-      data: null
-    };
-  }
-
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    return { valid: false, errors: ["JSON ไม่ถูกต้อง กรุณาตรวจสอบเครื่องหมายหรือรูปแบบข้อมูล"], data: null };
-  }
-
-  if (!data || typeof data !== "object" || Array.isArray(data)) {
-    return { valid: false, errors: ["ข้อมูล JSON ต้องเป็น Object ของ Portfolio Item"], data: data ?? null };
-  }
-
-  // ตรวจสอบฟิลด์หลักตามโครงสร้างที่ตกลงกัน
-  errors.push(...validatePortfolioItemData(data, "booth"));
-
-  // จำกัดความยาวฟิลด์ข้อความหลัก
-  ["id", "title", "type", "role", "description"].forEach(field => {
-    if (typeof data[field] === "string" && data[field].length > IMPORT_FIELD_LIMITS[field]) {
-      errors.push(`${field} ต้องมีความยาวไม่เกิน ${IMPORT_FIELD_LIMITS[field]} ตัวอักษร`);
-    }
-  });
-
-  // จำกัดจำนวนและความยาว Skills
-  if (Array.isArray(data.skills)) {
-    if (data.skills.length > 20) errors.push("skills มีได้ไม่เกิน 20 รายการ");
-    data.skills.forEach((skill, index) => {
-      if (typeof skill === "string" && skill.length > IMPORT_FIELD_LIMITS.skill) {
-        errors.push(`skills[${index}] ต้องมีความยาวไม่เกิน ${IMPORT_FIELD_LIMITS.skill} ตัวอักษร`);
-      }
-    });
-  }
-
-  // Reflection ต้องมี Object และฟิลด์ครบ แต่ยอมให้ค่าว่างเพื่อรอทำ Reflection ภายหลัง
-  if (!data.reflection || typeof data.reflection !== "object" || Array.isArray(data.reflection)) {
-    errors.push("reflection ต้องเป็น Object");
+  if (!data.reflection || typeof data.reflection !== "object" ||
+      Array.isArray(data.reflection)) {
+    errors.push("Reflection must be an object");
   } else {
     ["whatIDid", "whatILearned", "challenge", "nextStep"].forEach(field => {
-      const value = data.reflection[field];
-      if (typeof value !== "string") {
-        errors.push(`reflection.${field} ต้องเป็นข้อความ`);
-      } else if (value.length > IMPORT_FIELD_LIMITS.reflection) {
-        errors.push(`reflection.${field} ต้องมีความยาวไม่เกิน ${IMPORT_FIELD_LIMITS.reflection} ตัวอักษร`);
-      }
+      if (typeof data.reflection[field] !== "string")
+        errors.push(`Reflection ${field} must be a string`);
     });
   }
 
-  // Evidence ต้องเป็น Array; ยอมให้เป็น [] เพื่อรอแนบหลักฐานภายหลัง
   if (!Array.isArray(data.evidence)) {
-    errors.push("evidence ต้องเป็น Array");
+    errors.push("Evidence must be an array");
   } else {
-    if (data.evidence.length > 10) errors.push("evidence มีได้ไม่เกิน 10 รายการ");
-    data.evidence.forEach((url, index) => {
+    data.evidence.forEach(url => {
       if (typeof url !== "string") {
-        errors.push(`evidence[${index}] ต้องเป็นข้อความ URL`);
+        errors.push("Evidence URL must be a string");
         return;
       }
-      if (url.length > IMPORT_FIELD_LIMITS.evidenceUrl) {
-        errors.push(`evidence[${index}] ต้องมีความยาวไม่เกิน ${IMPORT_FIELD_LIMITS.evidenceUrl} ตัวอักษร`);
-        return;
-      }
-      if (!url.trim()) return;
       try {
         const parsed = new URL(url);
-        if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname) {
-          errors.push(`evidence[${index}] ต้องเป็น HTTP หรือ HTTPS URL`);
-        }
+        if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname)
+          errors.push(`Invalid Evidence URL: ${url}`);
       } catch {
-        errors.push(`evidence[${index}] ไม่ใช่ URL ที่ถูกต้อง`);
+        errors.push(`Invalid Evidence URL: ${url}`);
       }
     });
   }
-
-  // Optional Metadata: ตรวจสอบเมื่อมีค่า และเก็บไว้โดยไม่แสดงบนหน้าเว็บ
-  if (data.schemaVersion !== undefined && data.schemaVersion !== "1.0") {
-    errors.push('schemaVersion หากระบุต้องเป็น "1.0"');
-  }
-
-  ["challengeId", "hostGroup"].forEach(field => {
-    if (data[field] !== undefined && (
-      typeof data[field] !== "string" ||
-      !data[field].trim() ||
-      data[field].length > IMPORT_FIELD_LIMITS.optional
-    )) {
-      errors.push(`${field} ต้องเป็นข้อความที่มีความยาว 1-${IMPORT_FIELD_LIMITS.optional} ตัวอักษร`);
-    }
-  });
-
-  if (data.category !== undefined && !["discover", "mix", "levelup"].includes(data.category)) {
-    errors.push('category ต้องเป็น discover, mix หรือ levelup');
-  }
-
-  return { valid: errors.length === 0, errors, data };
+  return errors;
 }
-
-// ตรวจสอบนามสกุลและขนาดไฟล์ก่อนอ่าน โดยไม่แยกชุด Validation JSON
-function validateJsonFileMeta(file) {
-  if (!file) return "ไม่พบไฟล์ที่เลือก";
-  if (!/\.json$/i.test(file.name || "")) return "กรุณาเลือกไฟล์นามสกุล .json เท่านั้น";
-  if (file.size > IMPORT_MAX_BYTES) return `ไฟล์ต้องมีขนาดไม่เกิน ${IMPORT_MAX_BYTES / 1024} KB`;
-  return "";
-}
-
-// Import Item ลง Portfolio ใน Local Storage; ตรวจสอบซ้ำและบันทึกแบบไม่แก้ข้อมูลเดิมหากล้มเหลว
-function importPortfolioItem(text, portfolioId, storage = localStorage) {
-  const validation = validatePortfolioItemJson(text);
-  if (!validation.valid) return { success: false, error: validation.errors.join(" | ") };
-  if (typeof portfolioId !== "string" || !portfolioId.trim()) {
-    return { success: false, error: "กรุณาเลือก Portfolio ปลายทาง" };
-  }
-
-  try {
-    const storedText = storage.getItem(PORTFOLIOS_KEY);
-    if (!storedText) return { success: false, error: "ไม่พบข้อมูล Portfolio ใน Local Storage" };
-
-    const portfolios = JSON.parse(storedText);
-    if (!Array.isArray(portfolios)) throw new Error("ข้อมูล Portfolio ใน Local Storage ไม่ถูกต้อง");
-
-    const target = portfolios.find(portfolio => portfolio.portfolioId === portfolioId);
-    if (!target) return { success: false, error: "ไม่พบ Portfolio ปลายทาง" };
-    if (!Array.isArray(target.items)) target.items = [];
-
-    const itemId = validation.data.id;
-    if (target.items.some(item => item.id === itemId)) {
-      return { success: false, error: `ID "${itemId}" ถูก Import ใน Portfolio นี้แล้ว ไม่สามารถ Import ซ้ำได้` };
-    }
-
-    // กำหนดสถานะเริ่มต้นสำหรับ Issue 10 และเก็บ Optional Metadata ที่รองรับ
-    const importedItem = createPortfolioItem({
-      ...validation.data,
-      importStatus: "pending"
-    });
-
-    target.items.push(importedItem);
-
-    // เขียนเพียง Key หลักหนึ่งครั้ง; หาก setItem ล้มเหลว ข้อมูลเดิมจะยังไม่ถูกเปลี่ยน
-    storage.setItem(PORTFOLIOS_KEY, JSON.stringify(portfolios));
-
-    // แจ้งหน้าแอปให้โหลดข้อมูลล่าสุดและแสดง Item ที่เพิ่ง Import
-    if (typeof window !== "undefined" && storage === window.localStorage) {
-      window.dispatchEvent(new CustomEvent("portfolio:item-imported", {
-        detail: { portfolioId, itemId }
-      }));
-    }
-
-    return { success: true, item: importedItem };
-  } catch (error) {
-    return { success: false, error: `บันทึกข้อมูลไม่สำเร็จ: ${error.message || "เกิดข้อผิดพลาดใน Local Storage"}` };
-  }
-}
-
 
 // ตรวจสอบข้อมูลทุก Portfolio และข้ามรายการที่ไม่ผ่าน
 function sanitizePortfolios(list, source) {
@@ -363,33 +142,21 @@ function sanitizePortfolios(list, source) {
   }, []);
 }
 
-// ---------- STORAGE ----------
+// ---------- SERVER API ----------
 
-// อ่านข้อมูลจาก Local Storage; คืน null เมื่อไม่มีหรือข้อมูลเสีย
-function readPortfolios() {
-  try {
-    const data = JSON.parse(localStorage.getItem(PORTFOLIOS_KEY));
-    if (!Array.isArray(data)) return null;
-    const valid = sanitizePortfolios(data, "localStorage");
-    return data.length && !valid.length ? null : valid;
-  } catch {
-    return null;
-  }
+// เรียก PHP API และแปลงข้อผิดพลาดจาก Server เป็น Error ที่อ่านได้
+async function callPortfolioApi(url, options = {}) {
+  const response = await fetch(url, options);
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || `Request failed (${response.status})`);
+  return result;
 }
 
-// บันทึก Portfolio ทั้งหมดลง Local Storage
-function savePortfolios(list) {
-  localStorage.setItem(PORTFOLIOS_KEY, JSON.stringify(list));
-}
-
-// โหลด JSON ตัวอย่าง ตรวจสอบ และแปลงข้อมูลก่อนใช้งาน
-async function fetchSamplePortfolios() {
-  const results = await Promise.all(SAMPLE_FILES.map(async file => {
-    const response = await fetch(file);
-    if (!response.ok) throw new Error(`โหลด ${file} ไม่สำเร็จ (${response.status})`);
-    return response.json();
-  }));
-  return sanitizePortfolios(results.flat(), "sample files");
+// โหลดข้อมูล Portfolio ทั้งหมดจาก Server เท่านั้น
+async function loadPortfoliosFromServer() {
+  const data = await callPortfolioApi("api/portfolios.php");
+  if (!Array.isArray(data)) throw new Error("รูปแบบข้อมูลจาก Server ไม่ถูกต้อง");
+  return data.map(createPortfolio);
 }
 
 // ---------- UI HELPERS ----------
@@ -476,6 +243,48 @@ function confirmDialog(message, options = {}) {
   });
 }
 
+// แสดงช่องกรอกรหัสผ่านแบบซ่อนตัวอักษร และคืน null เมื่อยกเลิก
+function requestDeletePassword() {
+  return new Promise(resolve => {
+    const overlay = document.createElement("div");
+    overlay.className = "confirm-overlay";
+    const box = document.createElement("div");
+    box.className = "confirm-box";
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-modal", "true");
+    const title = document.createElement("h3");
+    title.className = "confirm-title";
+    title.textContent = "ยืนยันรหัสผ่านสำหรับการลบ";
+    const input = document.createElement("input");
+    input.type = "password";
+    input.className = "form-control my-3";
+    input.placeholder = "กรอกรหัสผ่าน";
+    input.autocomplete = "current-password";
+    const actions = document.createElement("div");
+    actions.className = "confirm-actions";
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "btn-confirm-cancel";
+    cancel.textContent = "ยกเลิก";
+    const submit = document.createElement("button");
+    submit.type = "button";
+    submit.className = "btn-confirm-ok";
+    submit.textContent = "ยืนยันการลบ";
+    function close(value) { overlay.remove(); resolve(value); }
+    cancel.addEventListener("click", () => close(null));
+    submit.addEventListener("click", () => close(input.value));
+    input.addEventListener("keydown", event => {
+      if (event.key === "Enter") close(input.value);
+      if (event.key === "Escape") close(null);
+    });
+    actions.append(cancel, submit);
+    box.append(title, input, actions);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    input.focus();
+  });
+}
+
 // แยกข้อความที่คั่นด้วย comma หรือขึ้นบรรทัดใหม่เป็น Array
 function splitList(text) {
   return text.split(/[,\n]/).map(value => value.trim()).filter(Boolean);
@@ -494,17 +303,13 @@ async function initializeApp() {
   const portfolioItemsCountEl = $("portfolio-items-count");
   const itemsListEl = $("portfolio-items-list");
 
-  // ใช้ข้อมูล Local Storage ก่อน หากไม่มีจึงโหลด JSON ตัวอย่าง
-  let portfolios = readPortfolios();
-  if (portfolios === null) {
-    try {
-      portfolios = await fetchSamplePortfolios();
-      savePortfolios(portfolios);
-    } catch (error) {
-      console.error(error);
-      portfolios = [];
-      showStatus("โหลดข้อมูลตัวอย่างไม่ได้ (ต้องเปิดผ่าน server เช่น Live Server ไม่ใช่ file://)", "danger");
-    }
+  // โหลด Portfolio จาก PHP API; ข้อมูลจริงถูกเก็บในไฟล์ JSON บน Server
+  let portfolios = [];
+  try {
+    portfolios = await loadPortfoliosFromServer();
+  } catch (error) {
+    console.error(error);
+    showStatus(`โหลดข้อมูลจาก Server ไม่สำเร็จ: ${error.message}`, "danger");
   }
 
   // คืนค่า Portfolio ที่ผู้ใช้เลือกอยู่
@@ -637,20 +442,34 @@ async function initializeApp() {
     if (!target) return;
 
     const confirmed = await confirmDialog(
-      "ต้องการลบ Item นี้ใช่หรือไม่? การลบไม่สามารถย้อนกลับได้",
-      { title: "ลบ Item", confirmText: "ลบ" }
+      "ต้องการลบ Item นี้ใช่หรือไม่? ระบบจะขอรหัสผ่านก่อนลบ และไม่สามารถย้อนกลับได้",
+      { title: "ลบ Item", confirmText: "ดำเนินการต่อ" }
     );
     if (!confirmed) return;
 
-    target.items = (target.items || []).filter(item => item.id !== itemId);
-    savePortfolios(portfolios);
-    renderPortfolioView(target);
-    showStatus("ลบ Item เรียบร้อยแล้ว!");
+    // รับรหัสผ่านจากผู้ใช้แล้วส่งให้ PHP ตรวจสอบ (ไม่ตรวจสอบรหัสผ่านใน JavaScript)
+    const password = await requestDeletePassword();
+    if (password === null) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("portfolioId", target.portfolioId);
+      formData.append("itemId", itemId);
+      formData.append("password", password);
+      await callPortfolioApi("api/delete.php", { method: "POST", body: formData });
+      target.items = (target.items || []).filter(item => item.id !== itemId);
+      renderPortfolioView(target);
+      showStatus("ลบ Item เรียบร้อยแล้ว!");
+    } catch (error) {
+      showStatus(error.message, "danger");
+    }
   }
 
   // อัปเดตข้อมูลภาพรวมและจำนวน Item
   function renderPortfolioView(portfolio) {
     const current = portfolio || {};
+    const profileNameEl = $("profile-name");
+    if (profileNameEl) profileNameEl.textContent = portfolio ? portfolio.name : "เลือก Portfolio";
     if (viewWhatEnjoyEl) viewWhatEnjoyEl.textContent = current.whatIEnjoy || "-";
     if (viewWhatTriedEl) viewWhatTriedEl.textContent = current.whatIveTried || "-";
     if (viewWhatCuriousEl) viewWhatCuriousEl.textContent = current.whatImCuriousAbout || "-";
@@ -672,6 +491,10 @@ async function initializeApp() {
     });
 
     const current = getCurrentPortfolio() || portfolios[0] || null;
+    const profileNameEl = $("profile-name");
+    const deletePortfolioButton = $("btn-delete-portfolio");
+    if (profileNameEl) profileNameEl.textContent = current ? current.name : "เลือก Portfolio";
+    if (deletePortfolioButton) deletePortfolioButton.disabled = !current;
     if (current) {
       portfolioSelectEl.value = current.portfolioId;
       localStorage.setItem(CURRENT_ID_KEY, current.portfolioId);
@@ -690,13 +513,29 @@ async function initializeApp() {
 
   renderAll();
 
-  // โหลดข้อมูลล่าสุดหลัง Import สำเร็จ และเลือก Portfolio ปลายทางให้ผู้ใช้เห็น Item ใหม่
-  window.addEventListener("portfolio:item-imported", event => {
-    const latestPortfolios = readPortfolios();
-    if (latestPortfolios !== null) portfolios = latestPortfolios;
-    const importedPortfolioId = event.detail?.portfolioId;
-    if (importedPortfolioId) localStorage.setItem(CURRENT_ID_KEY, importedPortfolioId);
-    renderAll();
+  // ลบ Portfolio ทั้งชุด (รวม Items และ Reflection) หลัง PHP ตรวจสอบรหัสผ่าน
+  $("btn-delete-portfolio")?.addEventListener("click", async () => {
+    const target = getCurrentPortfolio();
+    if (!target) return;
+    const confirmed = await confirmDialog(
+      `ต้องการลบ Portfolio \"${target.name}\" และ Item ทั้งหมดใช่หรือไม่?`,
+      { title: "ลบ Portfolio", confirmText: "ดำเนินการต่อ" }
+    );
+    if (!confirmed) return;
+    const password = await requestDeletePassword();
+    if (password === null) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("portfolioId", target.portfolioId);
+      formData.append("password", password);
+      await callPortfolioApi("api/delete.php", { method: "POST", body: formData });
+      portfolios = portfolios.filter(portfolio => portfolio.portfolioId !== target.portfolioId);
+      renderAll();
+      showStatus("ลบ Portfolio เรียบร้อยแล้ว!");
+    } catch (error) {
+      showStatus(error.message, "danger");
+    }
   });
 
   // เมื่อเปลี่ยน Dropdown ให้บันทึก ID และแสดง Portfolio ใหม่
@@ -705,29 +544,44 @@ async function initializeApp() {
     renderPortfolioView(getCurrentPortfolio());
   });
 
-  // ปุ่ม Reset: โหลด JSON ตัวอย่างและแทนที่ข้อมูลเดิม
-  $("btn-reset-data")?.addEventListener("click", async () => {
+  // Reset ข้อมูลบน Server กลับเป็น Portfolio ตัวอย่าง โดยต้องยืนยันและใส่รหัสผ่านก่อน
+  async function resetServerData() {
     const confirmed = await confirmDialog(
-      "ต้องการรีเซ็ตข้อมูลทั้งหมดกลับเป็นข้อมูลตัวอย่างใช่หรือไม่? ข้อมูลที่เพิ่มไว้จะหายทั้งหมด",
-      { title: "Reset Data", confirmText: "รีเซ็ต" }
+      "การ Reset จะเขียนทับข้อมูล Portfolio ทั้งหมดบน Server และคืนเป็นข้อมูลตัวอย่างเดิม ต้องการดำเนินการต่อหรือไม่?",
+      { title: "Reset Data", confirmText: "ดำเนินการต่อ" }
     );
     if (!confirmed) return;
 
+    // ขอรหัสผ่านแล้วส่งให้ PHP ตรวจสอบ ห้ามตรวจสอบรหัสผ่านใน JavaScript
+    const password = await requestDeletePassword();
+    if (password === null) return;
+
     try {
-      portfolios = await fetchSamplePortfolios();
-      savePortfolios(portfolios);
-      localStorage.removeItem(CURRENT_ID_KEY);
+      const formData = new FormData();
+      formData.append("password", password);
+      const result = await callPortfolioApi("api/reset.php", {
+        method: "POST",
+        body: formData
+      });
+
+      // แทนข้อมูลในหน่วยความจำด้วยข้อมูลล่าสุดที่ PHP ส่งกลับมา
+      portfolios = Array.isArray(result.portfolios)
+        ? result.portfolios.map(createPortfolio)
+        : await loadPortfoliosFromServer();
       renderAll();
-      showStatus("รีเซ็ตข้อมูลตัวอย่างเรียบร้อยแล้ว!");
+      showStatus(result.message || "Reset ข้อมูลเรียบร้อยแล้ว!");
     } catch (error) {
-      console.error(error);
-      showStatus("รีเซ็ตไม่สำเร็จ: โหลดไฟล์ตัวอย่างไม่ได้", "danger");
+      showStatus(error.message, "danger");
     }
-  });
+  }
+
+  // ปุ่ม Reset บน Desktop และ Mobile ใช้ฟังก์ชัน PHP เดียวกัน
+  $("btn-reset-data")?.addEventListener("click", resetServerData);
+  document.querySelector(".mobile-reset .btn-reset")?.addEventListener("click", resetServerData);
 
   // ฟอร์มสร้าง Portfolio ใหม่
   const portfolioForm = $("portfolio-form");
-  portfolioForm?.addEventListener("submit", event => {
+  portfolioForm?.addEventListener("submit", async event => {
     event.preventDefault();
     if (!portfolioForm.checkValidity()) {
       event.stopPropagation();
@@ -735,30 +589,29 @@ async function initializeApp() {
       return;
     }
 
-    const newPortfolio = {
-      portfolioId: `port-${Date.now()}`,
-      name: $("p-name").value.trim(),
-      whatIEnjoy: $("p-enjoy").value.trim(),
-      whatIveTried: $("p-tried").value.trim(),
-      whatImCuriousAbout: $("p-curious").value.trim(),
-      items: []
-    };
+    // ส่งข้อมูล Portfolio ไปให้ PHP สร้าง ID และบันทึกลง JSON บน Server
+    const formData = new FormData();
+    formData.append("name", $("p-name").value.trim());
+    formData.append("whatIEnjoy", $("p-enjoy").value.trim());
+    formData.append("whatIveTried", $("p-tried").value.trim());
+    formData.append("whatImCuriousAbout", $("p-curious").value.trim());
 
-    const errors = validatePortfolioData(newPortfolio);
-    if (errors.length) return showStatus(errors[0], "danger");
-
-    portfolios.push(createPortfolio(newPortfolio));
-    savePortfolios(portfolios);
-    localStorage.setItem(CURRENT_ID_KEY, newPortfolio.portfolioId);
-    renderAll();
-    showStatus("บันทึกข้อมูล Portfolio สำเร็จเรียบร้อยแล้ว!");
-    portfolioForm.reset();
-    portfolioForm.classList.remove("was-validated");
+    try {
+      const savedPortfolio = createPortfolio(await callPortfolioApi("api/portfolios.php", { method: "POST", body: formData }));
+      portfolios.push(savedPortfolio);
+      localStorage.setItem(CURRENT_ID_KEY, savedPortfolio.portfolioId);
+      renderAll();
+      showStatus("บันทึกข้อมูล Portfolio บน Server สำเร็จแล้ว!");
+      portfolioForm.reset();
+      portfolioForm.classList.remove("was-validated");
+    } catch (error) {
+      showStatus(error.message, "danger");
+    }
   });
 
   // ฟอร์มเพิ่ม Item ใน Portfolio ที่เลือก
   const itemForm = $("item-form");
-  itemForm?.addEventListener("submit", event => {
+  itemForm?.addEventListener("submit", async event => {
     event.preventDefault();
     if (!itemForm.checkValidity()) {
       event.stopPropagation();
@@ -788,24 +641,40 @@ async function initializeApp() {
       evidence: splitList(getValue("item-evidence"))
     };
 
-    const errors = validatePortfolioItemData(newItem, "booth");
+    const errors = validatePortfolioItemData(newItem);
     if (errors.length) return showStatus(errors[0], "danger");
 
-    if (!Array.isArray(target.items)) target.items = [];
-    target.items.push(createPortfolioItem(newItem));
-    savePortfolios(portfolios);
-    renderPortfolioView(target);
-    showStatus("บันทึก Portfolio Item สำเร็จเรียบร้อยแล้ว!");
-    itemForm.reset();
-    itemForm.classList.remove("was-validated");
+    // ส่งข้อมูล Item และ Reflection ไปบันทึกภายใน Portfolio บน Server
+    const formData = new FormData();
+    formData.append("portfolioId", target.portfolioId);
+    formData.append("title", newItem.title);
+    formData.append("type", newItem.type);
+    formData.append("date", newItem.date);
+    formData.append("role", newItem.role);
+    formData.append("description", newItem.description);
+    formData.append("skills", newItem.skills.join(","));
+    formData.append("whatIDid", newItem.reflection.whatIDid);
+    formData.append("whatILearned", newItem.reflection.whatILearned);
+    formData.append("challenge", newItem.reflection.challenge);
+    formData.append("nextStep", newItem.reflection.nextStep);
+    formData.append("evidence", newItem.evidence.join("\n"));
+
+    try {
+      const savedItem = createPortfolioItem(await callPortfolioApi("api/items.php", { method: "POST", body: formData }));
+      if (!Array.isArray(target.items)) target.items = [];
+      target.items.push(savedItem);
+      renderPortfolioView(target);
+      showStatus("บันทึก Portfolio Item บน Server สำเร็จแล้ว!");
+      itemForm.reset();
+      itemForm.classList.remove("was-validated");
+    } catch (error) {
+      showStatus(error.message, "danger");
+    }
   });
 }
 
 // เริ่มทำงานเมื่อ HTML โหลด DOM เสร็จ
-document.addEventListener("DOMContentLoaded", () => {
-  // เริ่มระบบ Portfolio เฉพาะหน้า index.html
-  if (document.getElementById("portfolio-select")) initializeApp();
-});
+document.addEventListener("DOMContentLoaded", initializeApp);
 
 
 /* =================================
@@ -814,225 +683,125 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function initializePowerUpNavigation() {
 
-  // 1. Add Item: Scroll ไปยังฟอร์ม
-  document.querySelectorAll("[data-scroll-target]")
-    .forEach(button => {
+    // 1. Add Item: Scroll ไปยังฟอร์ม
+    document.querySelectorAll("[data-scroll-target]")
+        .forEach(button => {
 
-      button.addEventListener("click", () => {
+            button.addEventListener("click", () => {
 
-        const targetId = button.dataset.scrollTarget;
-        const target = document.getElementById(targetId);
+                const targetId = button.dataset.scrollTarget;
+                const target = document.getElementById(targetId);
 
-        if (!target) return;
+                if (!target) return;
 
-        target.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
+                target.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+                // Focus ไม่เปลี่ยน และไม่ซ่อนฟอร์ม
+            });
         });
 
-        // Focus ไม่เปลี่ยน และไม่ซ่อนฟอร์ม
-      });
-    });
 
+    // 2. Smooth Scroll เมนู
+    const navLinks = document.querySelectorAll(
+        '.app-nav .nav-link[href^="#"]'
+    );
 
-  // 2. Smooth Scroll เมนู
-  const navLinks = document.querySelectorAll(
-    '.app-nav .nav-link[href^="#"]'
-  );
+    navLinks.forEach(link => {
 
-  navLinks.forEach(link => {
+        link.addEventListener("click", event => {
 
-    link.addEventListener("click", event => {
+            const targetId = link.getAttribute("href").substring(1);
+            const target = document.getElementById(targetId);
 
-      const targetId = link.getAttribute("href").substring(1);
-      const target = document.getElementById(targetId);
+            if (!target) return;
 
-      if (!target) return;
+            event.preventDefault();
 
-      event.preventDefault();
+            target.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
 
-      target.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+            // ปิด Hamburger หลังเลือกเมนู
+            const navbar = document.getElementById("mainNavbar");
 
-      // ปิด Hamburger หลังเลือกเมนู
-      const navbar = document.getElementById("mainNavbar");
+            if (navbar && navbar.classList.contains("show")) {
+                bootstrap.Collapse
+                    .getOrCreateInstance(navbar)
+                    .hide();
+            }
 
-      if (navbar && navbar.classList.contains("show")) {
-        bootstrap.Collapse
-          .getOrCreateInstance(navbar)
-          .hide();
-      }
+        });
 
     });
 
-  });
 
+    // 3. Active Menu
+    const sections = document.querySelectorAll(
+        "#portfolios-section, #portfolio-items-section"
+    );
 
-  // 3. Active Menu
-  const sections = document.querySelectorAll(
-    "#portfolios-section, #portfolio-items-section"
-  );
+    const observer = new IntersectionObserver(entries => {
 
-  const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
 
-    entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
 
-      if (!entry.isIntersecting) return;
+            navLinks.forEach(link => {
 
-      navLinks.forEach(link => {
+                const isActive =
+                    link.getAttribute("href") ===
+                    "#" + entry.target.id;
 
-        const isActive =
-          link.getAttribute("href") ===
-          "#" + entry.target.id;
+                link.classList.toggle("active", isActive);
 
-        link.classList.toggle("active", isActive);
+            });
 
-      });
+        });
 
+    }, {
+        rootMargin: "-120px 0px -55% 0px"
     });
 
-  }, {
-    rootMargin: "-120px 0px -55% 0px"
-  });
-
-  sections.forEach(section => observer.observe(section));
+    sections.forEach(section => observer.observe(section));
 
 }
 
 
 // รองรับกรณีโหลด JavaScript ก่อนหรือหลัง DOM
 if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    initializePowerUpNavigation
-  );
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializePowerUpNavigation
+    );
 } else {
-  initializePowerUpNavigation();
+    initializePowerUpNavigation();
 }
 
 
-// ---------- IMPORT PORTFOLIO ITEM (Issue #25 / #27) ----------
-document.addEventListener("DOMContentLoaded", () => {
-  const $ = id => document.getElementById(id);
-  const targetPortSelect = $("import-target-port");
-  const btnDownloadSample = $("btn-download-sample");
-  const dropZone = $("import-drop-zone");
-  const fileInput = $("import-file-input");
-  const textarea = $("import-textarea");
-  const errorAlert = $("import-error-alert");
-  const previewBox = $("import-preview-box");
-  const statusBox = $("import-status-box");
-  const statusText = $("import-status-text");
-  const btnRetry = $("btn-retry-import");
-  const btnPreview = $("btn-preview-json");
-  const btnImport = $("btn-confirm-import");
-  const btnOpenImport = $("btn-import-item");
-
-  if (!targetPortSelect && !textarea && !fileInput) return;
+// === โค้ดระบบ Import Portfolio Item (Issue #25) ===
+document.addEventListener('DOMContentLoaded', () => {
+  const targetPortSelect = document.getElementById('import-target-port');
+  const btnDownloadSample = document.getElementById('btn-download-sample');
+  const dropZone = document.getElementById('import-drop-zone');
+  const fileInput = document.getElementById('import-file-input');
+  const textarea = document.getElementById('import-textarea');
+  const errorAlert = document.getElementById('import-error-alert');
+  const previewBox = document.getElementById('import-preview-box');
+  const statusBox = document.getElementById('import-status-box');
+  const statusText = document.getElementById('import-status-text');
+  const btnRetry = document.getElementById('btn-retry-import');
+  const btnPreview = document.getElementById('btn-preview-json');
+  const btnImport = document.getElementById('btn-confirm-import');
 
   let verifiedItemData = null;
 
-  // แสดง Error ด้วย textContent เพื่อป้องกันการแทรก HTML/XSS
-  function showImportError(message) {
-    if (errorAlert) {
-      errorAlert.textContent = message;
-      errorAlert.classList.remove("d-none");
-    }
-    if (previewBox) previewBox.classList.add("d-none");
-    if (btnImport) btnImport.disabled = true;
-    verifiedItemData = null;
-  }
-
-  // แสดงสถานะการ Import ด้วย textContent
-  function showImportStatus(message, alertClass = "alert-info") {
-    if (!statusBox || !statusText) return;
-    statusBox.className = `alert ${alertClass} py-2 px-3 mb-3`;
-    statusText.textContent = message;
-    statusBox.classList.remove("d-none");
-  }
-
-  // ซ่อนข้อความแจ้งเตือนก่อนเริ่มการทำงานใหม่
-  function hideImportMessages() {
-    if (errorAlert) errorAlert.classList.add("d-none");
-    if (statusBox) statusBox.classList.add("d-none");
-  }
-
-  // ล้าง Preview และยกเลิกข้อมูลที่ผ่านการตรวจสอบไว้เมื่อ Input เปลี่ยน
-  function resetImportPreview() {
-    verifiedItemData = null;
-    if (btnImport) btnImport.disabled = true;
-    if (previewBox) previewBox.classList.add("d-none");
-  }
-
-  // อ่านไฟล์ JSON แล้วใส่ข้อความลง Textarea; ใช้ Validation ชุดเดียวกับการวางข้อความ
-  function readJsonFile(file) {
-    hideImportMessages();
-    resetImportPreview();
-
-    const fileError = validateJsonFileMeta(file);
-    if (fileError) {
-      showImportError(fileError);
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = event => {
-      if (textarea) {
-        textarea.value = String(event.target.result || "");
-        textarea.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-    };
-    reader.onerror = () => showImportError("อ่านไฟล์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
-    reader.readAsText(file);
-  }
-
-  // ตรวจ JSON และ ID ซ้ำสำหรับ Preview โดยยังไม่บันทึกข้อมูล
-  function validateImportPreview() {
-    hideImportMessages();
-    resetImportPreview();
-
-    const portfolioId = targetPortSelect?.value || "";
-    if (!portfolioId) {
-      showImportError("กรุณาเลือก Portfolio ปลายทางก่อนตรวจสอบ");
-      return null;
-    }
-
-    const rawText = textarea?.value || "";
-    const validation = validatePortfolioItemJson(rawText);
-    if (!validation.valid) {
-      showImportError(validation.errors.join(" | "));
-      return null;
-    }
-
-    try {
-      const portfolios = JSON.parse(localStorage.getItem(PORTFOLIOS_KEY) || "[]");
-      const target = Array.isArray(portfolios)
-        ? portfolios.find(portfolio => portfolio.portfolioId === portfolioId)
-        : null;
-
-      if (!target) {
-        showImportError("ไม่พบ Portfolio ปลายทางในข้อมูลที่บันทึกไว้");
-        return null;
-      }
-
-      const existingItems = Array.isArray(target.items) ? target.items : [];
-      if (existingItems.some(item => item.id === validation.data.id)) {
-        showImportError(`ID "${validation.data.id}" ถูก Import ใน Portfolio นี้แล้ว ไม่สามารถ Import ซ้ำได้`);
-        return null;
-      }
-    } catch {
-      showImportError("อ่านข้อมูล Portfolio ใน Local Storage ไม่สำเร็จ");
-      return null;
-    }
-
-    return validation.data;
-  }
-
-  // ดาวน์โหลด JSON ตัวอย่างตามโครงสร้าง Portfolio Item โดยตรง
+  // 1. ปุ่มดาวน์โหลดไฟล์ตัวอย่าง
   if (btnDownloadSample) {
-    btnDownloadSample.addEventListener("click", () => {
+    btnDownloadSample.addEventListener('click', () => {
       const sampleItem = {
         id: "item-sample-999",
         title: "Sample Portfolio Item",
@@ -1040,297 +809,317 @@ document.addEventListener("DOMContentLoaded", () => {
         date: "2026-11-18",
         role: "Developer",
         description: "ตัวอย่างรายละเอียดผลงานสำหรับการทดสอบระบบ Import",
-        skills: ["JavaScript", "Bootstrap 5", "JSON"],
+        skills: ["JavaScript", "Bootstrap 5", "JSON Schema"],
         reflection: {
           whatIDid: "พัฒนาฟังก์ชันนำเข้าข้อมูลผลงาน",
-          whatILearned: "เรียนรู้การตรวจสอบโครงสร้าง JSON",
-          challenge: "ตรวจสอบข้อมูลและป้องกัน ID ซ้ำ",
-          nextStep: "พัฒนาระบบ Reflection และ Evidence ต่อ"
+          whatILearned: "การตรวจสอบโครงสร้าง JSON และการจัดการ Error",
+          challenge: "การป้องกันช่องโหว่ XSS และการตรวจสอบข้อมูลซ้ำ",
+          nextStep: "เชื่อมโยงกับระบบ Reflection"
         },
         evidence: ["https://github.com/example/repo"]
       };
 
-      const blob = new Blob([JSON.stringify(sampleItem, null, 2)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(sampleItem, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "sample-portfolio-item.json";
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sample-item.json';
+      a.click();
+      URL.revokeObjectURL(url);
     });
   }
 
-  // เปิดส่วน Import จากปุ่มใน Portfolio Items
-  btnOpenImport?.addEventListener("click", () => {
-    $("import-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
+  // 2. ฟังก์ชันอ่านไฟล์ .json ที่อัปโหลดหรือลากมาวาง
+  function handleFile(file) {
+    hideMessages();
+    if (!file) return;
+    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
+      showError('กรุณาเลือกไฟล์นามสกุล .json เท่านั้น');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (textarea) textarea.value = e.target.result;
+      if (btnImport) btnImport.disabled = true;
+    };
+    reader.onerror = () => showError('ไม่สามารถอ่านไฟล์ได้ กรุณาลองใหม่อีกครั้ง');
+    reader.readAsText(file);
+  }
 
-  // เลือกไฟล์จากเครื่อง
-  fileInput?.addEventListener("change", event => readJsonFile(event.target.files?.[0]));
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+  }
 
-  // รองรับ Drag & Drop ไฟล์ JSON
   if (dropZone) {
-    dropZone.addEventListener("dragover", event => {
-      event.preventDefault();
-      dropZone.classList.add("border-primary");
-    });
-    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("border-primary"));
-    dropZone.addEventListener("drop", event => {
-      event.preventDefault();
-      dropZone.classList.remove("border-primary");
-      readJsonFile(event.dataTransfer?.files?.[0]);
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-primary'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-primary'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-primary');
+      if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
     });
   }
 
-  // ตรวจสอบข้อมูลและแสดง Preview ก่อน Import
-  btnPreview?.addEventListener("click", () => {
-    const item = validateImportPreview();
-    if (!item) return;
-
-    verifiedItemData = item;
-    $("prev-id").textContent = item.id;
-    $("prev-title").textContent = item.title;
-    $("prev-type").textContent = item.type;
-    $("prev-skills").textContent = item.skills.join(", ");
-    previewBox?.classList.remove("d-none");
-    if (btnImport) btnImport.disabled = false;
-  });
-
-  // ยืนยัน Import; importPortfolioItem จะ Validate และตรวจ ID ซ้ำอีกครั้งก่อนบันทึก
-  function performImport() {
-    if (!verifiedItemData) return;
-
-    const portfolioId = targetPortSelect?.value || "";
+  // 3. ฟังก์ชันตรวจสอบ JSON และ Schema
+  function validateJSONInput() {
+    hideMessages();
     if (btnImport) btnImport.disabled = true;
-    btnRetry?.classList.add("d-none");
-    showImportStatus("กำลังบันทึกข้อมูลลง Local Storage...", "alert-info");
+    verifiedItemData = null;
 
-    const result = importPortfolioItem(textarea?.value || "", portfolioId);
-    if (!result.success) {
-      showImportStatus(result.error, "alert-danger");
+    const portfolioId = targetPortSelect ? targetPortSelect.value : '';
+    if (!portfolioId) {
+      showError('กรุณาเลือก Portfolio ปลายทางก่อนตรวจสอบ');
+      return null;
+    }
+
+    const rawText = textarea ? textarea.value.trim() : '';
+    if (!rawText) {
+      showError('ข้อมูลในช่อง Textarea ว่างเปล่า กรุณาวาง JSON หรืออัปโหลดไฟล์');
+      return null;
+    }
+
+    let item;
+    try {
+      item = JSON.parse(rawText);
+    } catch (err) {
+      showError('รูปแบบ JSON ไม่ถูกต้อง (Syntax Error: ตรวจสอบเครื่องหมายปีกกาหรือเครื่องหมายคำพูด)');
+      return null;
+    }
+
+    if (typeof item !== 'object' || item === null || Array.isArray(item)) {
+      showError('Schema ไม่ถูกต้อง: ข้อมูลหลักต้องเป็น JSON Object ({ ... })');
+      return null;
+    }
+
+    if (!item.id || typeof item.id !== 'string') {
+      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "id" (ต้องมีและเป็นข้อความ)');
+      return null;
+    }
+    if (!item.title || typeof item.title !== 'string') {
+      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "title" (ต้องมีและเป็นข้อความ)');
+      return null;
+    }
+    if (!Array.isArray(item.skills) || item.skills.length === 0) {
+      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "skills" (ต้องเป็น Array และมีทักษะอย่างน้อย 1 ตัว)');
+      return null;
+    }
+
+    const storageKey = `portfolio_${portfolioId}_items`;
+    const existingItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const isDuplicate = existingItems.some(existing => existing.id === item.id);
+    if (isDuplicate) {
+      showError(`Item นี้ (id: "${item.id}") ถูก import เข้า Portfolio นี้ไปแล้ว`);
+      return null;
+    }
+
+    return item;
+  }
+
+  // 4. ปุ่ม Preview (ใช้ textContent ป้องกัน XSS)
+  if (btnPreview) {
+    btnPreview.addEventListener('click', () => {
+      const validItem = validateJSONInput();
+      if (!validItem) return;
+
+      verifiedItemData = validItem;
+      document.getElementById('prev-id').textContent = validItem.id;
+      document.getElementById('prev-title').textContent = validItem.title;
+      document.getElementById('prev-type').textContent = validItem.type || 'N/A';
+      document.getElementById('prev-skills').textContent = validItem.skills.join(', ');
+
+      if (previewBox) previewBox.classList.remove('d-none');
       if (btnImport) btnImport.disabled = false;
-      btnRetry?.classList.remove("d-none");
+    });
+  }
+
+  // 5. ปุ่มยืนยัน Import
+  async function performImport() {
+    if (!verifiedItemData) return;
+    const portfolioId = targetPortSelect ? targetPortSelect.value : '';
+
+    if (btnImport) btnImport.disabled = true;
+    if (btnRetry) btnRetry.classList.add('d-none');
+    showStatus('กำลังบันทึกข้อมูลลงระบบ...', 'alert-info');
+
+    try {
+      await new Promise(res => setTimeout(res, 700));
+
+      const storageKey = `portfolio_${portfolioId}_items`;
+      const existingItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      existingItems.push(verifiedItemData);
+      localStorage.setItem(storageKey, JSON.stringify(existingItems));
+
+      showStatus('Import สำเร็จ! กำลังพาไปยังหน้า Reflection / Evidence...', 'alert-success');
+
+      setTimeout(() => {
+        window.location.href = `booth.html?portfolioId=${encodeURIComponent(portfolioId)}&itemId=${encodeURIComponent(verifiedItemData.id)}`;
+      }, 1000);
+
+    } catch (err) {
+      showStatus('บันทึกล้มเหลว: ไม่สามารถบันทึกข้อมูลลงระบบได้', 'alert-danger');
+      if (btnRetry) btnRetry.classList.remove('d-none');
+    }
+  }
+
+  if (btnImport) btnImport.addEventListener('click', performImport);
+  if (btnRetry) btnRetry.addEventListener('click', performImport);
+
+  if (textarea) {
+    textarea.addEventListener('input', () => {
+      if (btnImport) btnImport.disabled = true;
+      if (previewBox) previewBox.classList.add('d-none');
+    });
+  }
+
+  function showError(msg) {
+    if (errorAlert) {
+      errorAlert.textContent = msg;
+      errorAlert.classList.remove('d-none');
+    }
+    if (previewBox) previewBox.classList.add('d-none');
+  }
+
+  function showStatus(msg, alertClass) {
+    if (statusBox && statusText) {
+      statusBox.className = `alert ${alertClass} py-2 px-3 mb-3`;
+      statusText.textContent = msg;
+      statusBox.classList.remove('d-none');
+    }
+  }
+
+  function hideMessages() {
+    if (errorAlert) errorAlert.classList.add('d-none');
+    if (statusBox) statusBox.classList.add('d-none');
+  }
+});
+
+// === โค้ดระบบ Export My Portfolio & Submission Helper (Issue #26) ===
+document.addEventListener('DOMContentLoaded', () => {
+  const exportPortSelect = document.getElementById('export-source-port');
+  const chkImportedItem = document.getElementById('chk-imported-item');
+  const chkReflection = document.getElementById('chk-reflection');
+  const chkEvidence = document.getElementById('chk-evidence');
+  const btnExportJson = document.getElementById('btn-export-json');
+  const btnCopyJson = document.getElementById('btn-copy-json');
+  const exportAlert = document.getElementById('export-status-alert');
+
+  let currentExportPayload = null;
+
+  // ข้อมูลพื้นฐานของ Portfolio (อ้างอิงจากโครงสร้างไฟล์ตัวอย่างของกลุ่ม)
+  const basePortfolios = {
+    'portfolio-1': {
+      portfolioId: 'portfolio-1',
+      name: 'Napat Wattanapong (Ploy)',
+      whatIEnjoy: 'Designing user-friendly web interfaces, building interactive frontend applications, and collaborating on creative student tech projects.',
+      whatIveTried: 'HTML5, CSS3, Bootstrap 5, Vanilla JavaScript, Git/GitHub workflow, and Figma UI prototyping.',
+      whatImCuriousAbout: 'React.js, TypeScript, accessible web design (WCAG), and full-stack development with Node.js.'
+    },
+    'portfolio-2': {
+      portfolioId: 'portfolio-2',
+      name: 'Thanawat Srisuk (Ton)',
+      whatIEnjoy: 'Solving algorithmic problems, automating repetitive workflows with Python, and exploring data visualization.',
+      whatIveTried: 'Python scripting, C programming, basic SQL queries, data cleaning with Pandas, and command-line Git.',
+      whatImCuriousAbout: 'Machine learning fundamentals, RESTful API design, Docker containers, and cloud deployment.'
+    }
+  };
+
+  function updateChecklistItem(element, isPassed, text) {
+    if (!element) return;
+    element.className = isPassed ? 'mb-1 text-success fw-semibold' : 'mb-1 text-danger';
+    element.textContent = `${isPassed ? '✓' : '✗'} ${text}`;
+  }
+
+  function evaluatePortfolioChecklist(portfolioId) {
+    if (exportAlert) exportAlert.classList.add('d-none');
+    currentExportPayload = null;
+
+    if (!portfolioId || !basePortfolios[portfolioId]) {
+      updateChecklistItem(chkImportedItem, false, 'มี Item จากเพื่อนต่างกลุ่มอย่างน้อย 1 รายการ');
+      updateChecklistItem(chkReflection, false, 'Item ที่นำเข้ามีข้อมูล Reflection ครบถ้วน');
+      updateChecklistItem(chkEvidence, false, 'Item ที่นำเข้ามีหลักฐาน Evidence แนบอยู่');
+      if (btnExportJson) btnExportJson.disabled = true;
+      if (btnCopyJson) btnCopyJson.disabled = true;
       return;
     }
 
-    verifiedItemData = null;
-    if (previewBox) previewBox.classList.add("d-none");
-    showImportStatus(`Import Item ID: ${result.item.id} สำเร็จแล้ว`, "alert-success");
-    if (btnImport) btnImport.disabled = true;
-    if (textarea) textarea.value = "";
-    if (fileInput) fileInput.value = "";
-  }
+    // ดึงรายการ Item ที่ถูก Import เก็บไว้ใน localStorage (จาก Issue #25)
+    const storageKey = `portfolio_${portfolioId}_items`;
+    const importedItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
 
-  btnImport?.addEventListener("click", performImport);
-  btnRetry?.addEventListener("click", performImport);
+    // 1. เช็คว่ามี Item อย่างน้อย 1 รายการหรือไม่
+    const hasImportedItem = importedItems.length >= 1;
 
-  // เปลี่ยน Portfolio หรือแก้ JSON แล้วต้อง Preview ใหม่ทุกครั้ง
-  targetPortSelect?.addEventListener("change", () => {
-    hideImportMessages();
-    resetImportPreview();
-  });
-  textarea?.addEventListener("input", () => {
-    hideImportMessages();
-    resetImportPreview();
-  });
-});
-
-
-// ---------- EXPORT MY PORTFOLIO & SUBMISSION HELPER (Issue #26) ----------
-document.addEventListener("DOMContentLoaded", () => {
-  const exportPortSelect = document.getElementById("export-source-port");
-  const chkImportedItem = document.getElementById("chk-imported-item");
-  const chkReflection = document.getElementById("chk-reflection");
-  const chkEvidence = document.getElementById("chk-evidence");
-  const btnExportJson = document.getElementById("btn-export-json");
-  const btnCopyJson = document.getElementById("btn-copy-json");
-  const exportAlert = document.getElementById("export-status-alert");
-
-  if (!exportPortSelect) return;
-
-  let currentExportItem = null;
-
-  // แสดงผล Checklist แต่ละข้อด้วยข้อความธรรมดา
-  function updateChecklistItem(element, isPassed, text) {
-    if (!element) return;
-    element.className = isPassed ? "mb-1 text-success fw-semibold" : "mb-1 text-danger";
-    element.textContent = `${isPassed ? "✓" : "✗"} ${text}`;
-  }
-
-  // ตรวจสอบ Item ที่ Import ใน Portfolio ที่เลือกจากข้อมูลหลักชุดเดียว
-  function evaluatePortfolioChecklist(portfolioId) {
-    exportAlert?.classList.add("d-none");
-    currentExportItem = null;
-
-    let portfolio = null;
-    try {
-      const portfolios = JSON.parse(localStorage.getItem(PORTFOLIOS_KEY) || "[]");
-      portfolio = Array.isArray(portfolios)
-        ? portfolios.find(item => item.portfolioId === portfolioId)
-        : null;
-    } catch {
-      portfolio = null;
-    }
-
-    const importedItems = Array.isArray(portfolio?.items)
-      ? portfolio.items.filter(item => Boolean(item.importStatus))
-      : [];
-    const hasImportedItem = importedItems.length > 0;
-    const hasCompleteReflection = importedItems.some(item => {
-      const reflection = item.reflection || {};
-      return [reflection.whatIDid, reflection.whatILearned, reflection.challenge, reflection.nextStep]
-        .every(value => typeof value === "string" && value.trim());
+    // 2. เช็คว่า Item มี Reflection ครบหรือไม่
+    const hasCompleteReflection = hasImportedItem && importedItems.some(item => {
+      const r = item.reflection;
+      return r && r.whatIDid && r.whatILearned && r.challenge && r.nextStep;
     });
-    const hasEvidence = importedItems.some(item =>
-      Array.isArray(item.evidence) && item.evidence.some(url => typeof url === "string" && url.trim())
-    );
 
-    updateChecklistItem(chkImportedItem, hasImportedItem, "มี Item จากเพื่อนต่างกลุ่มอย่างน้อย 1 รายการ");
-    updateChecklistItem(chkReflection, hasCompleteReflection, "Item ที่นำเข้ามีข้อมูล Reflection ครบถ้วน");
-    updateChecklistItem(chkEvidence, hasEvidence, "Item ที่นำเข้ามีหลักฐาน Evidence แนบอยู่");
+    // 3. เช็คว่า Item มี Evidence หรือไม่
+    const hasEvidence = hasImportedItem && importedItems.some(item => {
+      return Array.isArray(item.evidence) && item.evidence.length > 0;
+    });
 
-    // Export เป็น Item โดยตรงให้ตรงกับรูปแบบ Import ที่ตกลงกัน
-    currentExportItem = importedItems.find(item =>
-      item.reflection &&
-      [item.reflection.whatIDid, item.reflection.whatILearned, item.reflection.challenge, item.reflection.nextStep]
-        .every(value => typeof value === "string" && value.trim()) &&
-      Array.isArray(item.evidence) && item.evidence.some(url => typeof url === "string" && url.trim())
-    ) || null;
+    updateChecklistItem(chkImportedItem, hasImportedItem, 'มี Item จากเพื่อนต่างกลุ่มอย่างน้อย 1 รายการ');
+    updateChecklistItem(chkReflection, hasCompleteReflection, 'Item ที่นำเข้ามีข้อมูล Reflection ครบถ้วน');
+    updateChecklistItem(chkEvidence, hasEvidence, 'Item ที่นำเข้ามีหลักฐาน Evidence แนบอยู่');
 
-    const allPassed = hasImportedItem && hasCompleteReflection && hasEvidence;
-    if (btnExportJson) btnExportJson.disabled = !allPassed || !currentExportItem;
-    if (btnCopyJson) btnCopyJson.disabled = !hasImportedItem || !currentExportItem;
-  }
+    const isAllPassed = hasImportedItem && hasCompleteReflection && hasEvidence;
 
-  // แสดงข้อความสถานะการ Export
-  function showExportMessage(message) {
-    if (!exportAlert) return;
-    exportAlert.textContent = message;
-    exportAlert.classList.remove("d-none");
-  }
-
-  // ดาวน์โหลด Portfolio Item JSON โดยไม่ห่อ Wrapper เพิ่ม
-  function downloadExportItem() {
-    if (!currentExportItem) return;
-    const blob = new Blob([JSON.stringify(currentExportItem, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `portfolio-item-${currentExportItem.id}.json`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    showExportMessage("ดาวน์โหลด Portfolio Item JSON เรียบร้อยแล้ว");
-  }
-
-  // คัดลอก Portfolio Item JSON ไปยัง Clipboard
-  async function copyExportItem() {
-    if (!currentExportItem) return;
-    try {
-      await navigator.clipboard.writeText(JSON.stringify(currentExportItem, null, 2));
-      showExportMessage("คัดลอก Portfolio Item JSON เรียบร้อยแล้ว");
-    } catch {
-      showExportMessage("ไม่สามารถคัดลอก JSON ได้ กรุณาใช้ปุ่ม Export แทน");
-    }
-  }
-
-  exportPortSelect.addEventListener("change", event => evaluatePortfolioChecklist(event.target.value));
-  btnExportJson?.addEventListener("click", downloadExportItem);
-  btnCopyJson?.addEventListener("click", copyExportItem);
-  evaluatePortfolioChecklist(exportPortSelect.value);
-
-  // อัปเดต Checklist หลังมีการ Import Item สำเร็จ
-  window.addEventListener("portfolio:item-imported", () => {
-    evaluatePortfolioChecklist(exportPortSelect.value);
-  });
-});
-
-
-
-// ---------- IMPORT TESTS ----------
-// เรียก runPortfolioItemImportTests() ใน Browser Console เพื่อทดสอบ 6 กรณีหลัก
-function runPortfolioItemImportTests() {
-  const validItem = {
-    id: "test-item-001",
-    title: "Test Website",
-    type: "Course Assignment",
-    date: "2026-11-19",
-    role: "Developer",
-    description: "Test description",
-    skills: ["HTML", "CSS"],
-    reflection: {
-      whatIDid: "",
-      whatILearned: "",
-      challenge: "",
-      nextStep: ""
-    },
-    evidence: [],
-    schemaVersion: "1.0",
-    challengeId: "CH001",
-    hostGroup: "Group A",
-    category: "discover"
-  };
-
-  const makeStorage = (initial, shouldFail = false) => {
-    const values = new Map(Object.entries(initial || {}));
-    return {
-      getItem: key => values.has(key) ? values.get(key) : null,
-      setItem: (key, value) => {
-        if (shouldFail) throw new Error("Simulated Local Storage error");
-        values.set(key, String(value));
-      },
-      removeItem: key => values.delete(key),
-      dump: key => values.get(key)
+    // เตรียมข้อมูลสำหรับ Export
+    currentExportPayload = {
+      ...basePortfolios[portfolioId],
+      exportedAt: new Date().toISOString(),
+      items: importedItems
     };
-  };
 
-  const portfolioData = [{ portfolioId: "portfolio-test", name: "Test", items: [] }];
-  const validText = JSON.stringify(validItem);
-  const duplicateStorage = makeStorage({
-    portfolios: JSON.stringify([{ ...portfolioData[0], items: [{ ...validItem }] }])
-  });
-  const saveErrorStorage = makeStorage({ portfolios: JSON.stringify(portfolioData) }, true);
+    // เปิดใช้งานปุ่ม Export เมื่อผ่านเกณฑ์ครบ (ปุ่ม Copy เปิดให้ใช้สำรองได้เมื่อมีข้อมูล)
+    if (btnExportJson) btnExportJson.disabled = !isAllPassed;
+    if (btnCopyJson) btnCopyJson.disabled = !hasImportedItem;
+  }
 
-  const tests = [
-    {
-      name: "Valid Item",
-      run: () => importPortfolioItem(validText, "portfolio-test", makeStorage({ portfolios: JSON.stringify(portfolioData) })).success
-    },
-    {
-      name: "Duplicate ID",
-      run: () => !importPortfolioItem(validText, "portfolio-test", duplicateStorage).success
-    },
-    {
-      name: "Invalid JSON",
-      run: () => !validatePortfolioItemJson("{ invalid json }").valid
-    },
-    {
-      name: "Wrong file extension",
-      run: () => Boolean(validateJsonFileMeta({ name: "item.txt", size: 10 }))
-    },
-    {
-      name: "File too large",
-      run: () => Boolean(validateJsonFileMeta({ name: "item.json", size: IMPORT_MAX_BYTES + 1 }))
-    },
-    {
-      name: "Local Storage save error keeps original data",
-      run: () => {
-        const before = saveErrorStorage.dump("portfolios");
-        const result = importPortfolioItem(validText, "portfolio-test", saveErrorStorage);
-        return !result.success && saveErrorStorage.dump("portfolios") === before;
+  if (exportPortSelect) {
+    exportPortSelect.addEventListener('change', (e) => {
+      evaluatePortfolioChecklist(e.target.value);
+    });
+  }
+
+  // ปุ่ม Export ดาวน์โหลดไฟล์ชื่อ my-portfolio.json
+  if (btnExportJson) {
+    btnExportJson.addEventListener('click', () => {
+      if (!currentExportPayload) return;
+
+      const jsonString = JSON.stringify(currentExportPayload, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'my-portfolio.json';
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showExportMessage('ดาวน์โหลดไฟล์ my-portfolio.json เรียบร้อยแล้ว');
+    });
+  }
+
+  // ปุ่ม Copy JSON สำรอง
+  if (btnCopyJson) {
+    btnCopyJson.addEventListener('click', async () => {
+      if (!currentExportPayload) return;
+
+      const jsonString = JSON.stringify(currentExportPayload, null, 2);
+      try {
+        await navigator.clipboard.writeText(jsonString);
+        showExportMessage('คัดลอกข้อมูล JSON ลงคลิปบอร์ดเรียบร้อยแล้ว');
+      } catch (err) {
+        showExportMessage('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณากดปุ่ม Export แทน');
       }
-    }
-  ];
+    });
+  }
 
-  const results = tests.map(test => {
-    let passed = false;
-    try { passed = Boolean(test.run()); } catch (error) { console.error(error); }
-    return { Test: test.name, Passed: passed };
-  });
-  console.table(results);
-  return results.every(result => result.Passed);
-}
-
-// เปิดให้เรียกชุดทดสอบจาก Browser Console
-if (typeof window !== "undefined") {
-  window.runPortfolioItemImportTests = runPortfolioItemImportTests;
-}
+  function showExportMessage(msg) {
+    if (!exportAlert) return;
+    exportAlert.textContent = msg;
+    exportAlert.classList.remove('d-none');
+  }
+});

@@ -1,0 +1,581 @@
+
+/* POWER UP! Portfolio Import / Export
+ * ใช้ PHP API เป็นแหล่งข้อมูลหลัก เพื่อให้ข้อมูลถาวรอยู่บน Server
+ */
+
+(() => {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+  const API = "api/portfolios.php";
+
+  // ---------- API Request ----------
+  async function request(url, options = {}) {
+    const response = await fetch(url, options);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || `Request failed (${response.status})`);
+    }
+
+    return data;
+  }
+
+  // ---------- แสดงข้อความแจ้งเตือน ----------
+  function show(el, message, type = "danger") {
+    if (!el) return;
+
+    el.className = `alert alert-${type} py-2 px-3 mb-3`;
+    el.textContent = message;
+    el.classList.remove("d-none");
+  }
+
+  // ---------- ตรวจสอบวันที่ ----------
+  // ตรวจสอบวันที่จริงรูปแบบ YYYY-MM-DD
+  // โดยไม่ใช้ toISOString() เพื่อป้องกันปัญหา Timezone
+  function isValidDate(value) {
+    if (typeof value !== "string") return false;
+
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+    if (!match) return false;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    return (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day
+    );
+  }
+
+  // ---------- ตรวจสอบข้อมูล JSON ----------
+  function validateItem(text) {
+    const errors = [];
+
+    if (typeof text !== "string" || !text.trim()) {
+      return {
+        valid: false,
+        errors: ["กรุณาระบุ JSON"]
+      };
+    }
+
+    if (new Blob([text]).size > 256 * 1024) {
+      return {
+        valid: false,
+        errors: ["JSON ต้องมีขนาดไม่เกิน 256 KB"]
+      };
+    }
+
+    let item;
+
+    try {
+      item = JSON.parse(text);
+    } catch {
+      return {
+        valid: false,
+        errors: ["JSON Syntax ไม่ถูกต้อง"]
+      };
+    }
+
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      return {
+        valid: false,
+        errors: ["ข้อมูลต้องเป็น Object ของ Portfolio Item"]
+      };
+    }
+
+    // ตรวจสอบฟิลด์ที่จำเป็น
+    ["id", "title", "type", "date", "role", "description"].forEach(key => {
+      if (typeof item[key] !== "string" || !item[key].trim()) {
+        errors.push(`${key} จำเป็นต้องมีข้อมูล`);
+      }
+    });
+
+    // ตรวจสอบวันที่
+    if (typeof item.date === "string") {
+      if (!isValidDate(item.date.trim())) {
+        errors.push("date ต้องเป็นวันที่จริงรูปแบบ YYYY-MM-DD");
+      }
+    }
+
+    // ตรวจสอบ Skills
+    if (
+      !Array.isArray(item.skills) ||
+      item.skills.length > 20 ||
+      !item.skills.every(x => typeof x === "string" && x.trim())
+    ) {
+      errors.push("skills ต้องเป็น Array ของข้อความ (ไม่เกิน 20 รายการ)");
+    }
+
+    // ตรวจสอบ Reflection
+    if (
+      !item.reflection ||
+      typeof item.reflection !== "object" ||
+      Array.isArray(item.reflection)
+    ) {
+      errors.push("reflection ต้องเป็น Object");
+    } else {
+      ["whatIDid", "whatILearned", "challenge", "nextStep"].forEach(key => {
+        if (typeof item.reflection[key] !== "string") {
+          errors.push(`reflection.${key} ต้องเป็นข้อความ`);
+        }
+      });
+    }
+
+    // ตรวจสอบ Evidence
+    if (!Array.isArray(item.evidence) || item.evidence.length > 10) {
+      errors.push("evidence ต้องเป็น Array (ไม่เกิน 10 รายการ)");
+    } else {
+      item.evidence.forEach((url, i) => {
+        if (typeof url !== "string") {
+          errors.push(`evidence[${i}] ต้องเป็นข้อความ`);
+          return;
+        }
+
+        if (!url.trim()) return;
+
+        try {
+          const u = new URL(url);
+
+          if (!["http:", "https:"].includes(u.protocol) || !u.hostname) {
+            throw new Error();
+          }
+        } catch {
+          errors.push(`evidence[${i}] ต้องเป็น HTTP/HTTPS URL`);
+        }
+      });
+    }
+
+    // ตรวจสอบ Schema Version
+    if (
+      item.schemaVersion !== undefined &&
+      item.schemaVersion !== "1.0"
+    ) {
+      errors.push('schemaVersion หากระบุต้องเป็น "1.0"');
+    }
+
+    // ตรวจสอบ Category
+    if (
+      item.category !== undefined &&
+      !["discover", "mix", "levelup"].includes(item.category)
+    ) {
+      errors.push("category ไม่ถูกต้อง");
+    }
+
+    // ตรวจสอบ Challenge ID และ Host Group
+    ["challengeId", "hostGroup"].forEach(k => {
+      if (
+        item[k] !== undefined &&
+        (
+          typeof item[k] !== "string" ||
+          !item[k].trim() ||
+          item[k].length > 100
+        )
+      ) {
+        errors.push(`${k} ไม่ถูกต้อง`);
+      }
+    });
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      data: item
+    };
+  }
+
+  // ---------- เติมข้อมูลลง Select ----------
+  function fillSelect(select, portfolios) {
+    if (!select) return;
+
+    const previous = select.value;
+
+    select.innerHTML =
+      '<option value="">-- กรุณาเลือก Portfolio --</option>';
+
+    portfolios.forEach(p => {
+      const option = document.createElement("option");
+
+      option.value = p.portfolioId;
+      option.textContent = p.name;
+
+      select.appendChild(option);
+    });
+
+    if (portfolios.some(p => p.portfolioId === previous)) {
+      select.value = previous;
+    }
+  }
+
+  // ---------- เริ่มต้นระบบ ----------
+  async function init() {
+    const targetSelect = $("import-target-port");
+    const exportSelect = $("export-source-port");
+    const textArea = $("import-textarea");
+    const fileInput = $("import-file-input");
+    const drop = $("import-drop-zone");
+
+    const error = $("import-error-alert");
+    const preview = $("import-preview-box");
+
+    const status = $("import-status-box");
+    const statusText = $("import-status-text");
+
+    const previewButton = $("btn-preview-json");
+    const importButton = $("btn-confirm-import");
+
+    const exportButton = $("btn-export-json");
+    const copyButton = $("btn-copy-json");
+
+    const exportAlert = $("export-status-alert");
+
+    if (!targetSelect || !exportSelect) return;
+
+    let portfolios = [];
+    let verifiedItem = null;
+    let exportPayload = "";
+
+    // ---------- โหลด Portfolio จาก Server ----------
+    try {
+      portfolios = await request(API);
+
+      fillSelect(targetSelect, portfolios);
+      fillSelect(exportSelect, portfolios);
+
+    } catch (e) {
+      show(error, `โหลดรายชื่อ Portfolio ไม่สำเร็จ: ${e.message}`);
+    }
+
+    // ---------- รีเซ็ต Preview ----------
+    function resetPreview() {
+      verifiedItem = null;
+
+      importButton.disabled = true;
+      preview.classList.add("d-none");
+    }
+
+    // ---------- ดาวน์โหลดไฟล์ตัวอย่าง ----------
+    $("btn-download-sample")?.addEventListener("click", () => {
+      const sample = {
+        id: "item-sample-001",
+        title: "Sample Portfolio Item",
+        type: "Challenge",
+
+        date: new Date().toISOString().slice(0, 10),
+
+        role: "Participant",
+        description: "ตัวอย่างข้อมูลสำหรับทดสอบ Import",
+
+        skills: ["JavaScript", "JSON"],
+
+        reflection: {
+          whatIDid: "ทดลองทำงาน",
+          whatILearned: "เรียนรู้การ Import",
+          challenge: "ตรวจสอบข้อมูล",
+          nextStep: "พัฒนาต่อ"
+        },
+
+        evidence: [
+          "https://github.com/example/repository"
+        ],
+
+        challengeId: "sample-challenge",
+        hostGroup: "Group 6",
+        category: "discover",
+        schemaVersion: "1.0"
+      };
+
+      const blob = new Blob(
+        [JSON.stringify(sample, null, 2)],
+        { type: "application/json" }
+      );
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "sample-portfolio-item.json";
+      a.click();
+
+      URL.revokeObjectURL(url);
+    });
+
+    // ---------- เลือกไฟล์ JSON ----------
+    fileInput?.addEventListener("change", async () => {
+      const file = fileInput.files?.[0];
+
+      if (!file) return;
+
+      if (!/\.json$/i.test(file.name) || file.size > 256 * 1024) {
+        show(error, "กรุณาเลือกไฟล์ .json ขนาดไม่เกิน 256 KB");
+        resetPreview();
+        return;
+      }
+
+      textArea.value = await file.text();
+
+      resetPreview();
+    });
+
+    // ---------- Drag and Drop ----------
+    drop?.addEventListener("dragover", e => {
+      e.preventDefault();
+      drop.classList.add("border-primary");
+    });
+
+    drop?.addEventListener("dragleave", () => {
+      drop.classList.remove("border-primary");
+    });
+
+    drop?.addEventListener("drop", e => {
+      e.preventDefault();
+
+      drop.classList.remove("border-primary");
+
+      const file = e.dataTransfer.files?.[0];
+
+      if (!file) return;
+
+      if (!/\.json$/i.test(file.name) || file.size > 256 * 1024) {
+        show(error, "กรุณาเลือกไฟล์ .json ขนาดไม่เกิน 256 KB");
+        resetPreview();
+        return;
+      }
+
+      file.text().then(value => {
+        textArea.value = value;
+        resetPreview();
+      });
+    });
+
+    // ---------- เมื่อแก้ไข JSON ----------
+    textArea?.addEventListener("input", resetPreview);
+
+    // ---------- ตรวจสอบและ Preview JSON ----------
+    previewButton?.addEventListener("click", () => {
+      error.classList.add("d-none");
+
+      const result = validateItem(textArea.value);
+
+      if (!result.valid) {
+        show(error, result.errors.join(" • "));
+        resetPreview();
+        return;
+      }
+
+      if (!targetSelect.value) {
+        show(error, "กรุณาเลือก Portfolio ปลายทาง");
+        resetPreview();
+        return;
+      }
+
+      verifiedItem = result.data;
+
+      $("prev-id").textContent = verifiedItem.id;
+      $("prev-title").textContent = verifiedItem.title;
+      $("prev-type").textContent = verifiedItem.type;
+      $("prev-skills").textContent = verifiedItem.skills.join(", ");
+
+      preview.classList.remove("d-none");
+      importButton.disabled = false;
+    });
+
+    // ---------- ยืนยัน Import ลง Server ----------
+    importButton?.addEventListener("click", async () => {
+      if (!verifiedItem || !targetSelect.value) return;
+
+      importButton.disabled = true;
+
+      status.className = "alert alert-info py-2 px-3 mb-3";
+      statusText.textContent = "กำลังบันทึกข้อมูลลง Server...";
+      status.classList.remove("d-none");
+
+      try {
+        await request("api/import-item.php", {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            portfolioId: targetSelect.value,
+            item: verifiedItem
+          })
+        });
+
+        status.className = "alert alert-success py-2 px-3 mb-3";
+
+        statusText.textContent =
+          "Import สำเร็จ! บันทึก Item ลง Server แล้ว กรุณา Refresh หน้าเพื่อดูข้อมูล";
+
+        show(error, "", "success");
+
+        verifiedItem = null;
+        textArea.value = "";
+
+        preview.classList.add("d-none");
+
+      } catch (e) {
+        status.className = "alert alert-danger py-2 px-3 mb-3";
+
+        statusText.textContent = `Import ไม่สำเร็จ: ${e.message}`;
+
+        importButton.disabled = false;
+      }
+    });
+
+    // ---------- เตรียมข้อมูล Export ----------
+    async function prepareExport() {
+      exportPayload = "";
+
+      exportButton.disabled = true;
+      copyButton.disabled = true;
+
+      const id = exportSelect.value;
+
+      if (!id) return;
+
+      try {
+        const latest = await request(API);
+
+        const portfolio = latest.find(p => p.portfolioId === id);
+
+        if (!portfolio) {
+          throw new Error("ไม่พบ Portfolio ที่เลือก");
+        }
+
+        const items = Array.isArray(portfolio.items)
+          ? portfolio.items
+          : [];
+
+        // เลือกเฉพาะ Item ที่เกี่ยวข้องกับการ Import
+        const imported = items.filter(item =>
+          item.importStatus === "pending" ||
+          item.exchangeId ||
+          item.challengeId
+        );
+
+        // ตรวจสอบ Reflection
+        const completeReflection = imported.some(item => {
+          const r = item.reflection || {};
+
+          return [
+            "whatIDid",
+            "whatILearned",
+            "challenge",
+            "nextStep"
+          ].every(k =>
+            typeof r[k] === "string" && r[k].trim()
+          );
+        });
+
+        // ตรวจสอบ Evidence URL
+        const hasEvidence = imported.some(item =>
+          Array.isArray(item.evidence) &&
+          item.evidence.some(url =>
+            typeof url === "string" &&
+            /^https?:\/\//i.test(url)
+          )
+        );
+
+        // ---------- แสดงสถานะ Checklist ----------
+        const setCheck = (id, passed) => {
+          const el = $(id);
+
+          if (!el) return;
+
+          el.className = passed
+            ? "mb-1 text-success fw-semibold"
+            : "mb-1 text-danger";
+
+          const icon = el.querySelector(".chk-icon");
+
+          if (icon) {
+            icon.textContent = passed ? "✓" : "✗";
+          }
+        };
+
+        setCheck("chk-imported-item", imported.length > 0);
+        setCheck("chk-reflection", completeReflection);
+        setCheck("chk-evidence", hasEvidence);
+
+        // ---------- สร้างข้อมูล JSON ----------
+        exportPayload = JSON.stringify({
+          portfolioId: portfolio.portfolioId,
+          name: portfolio.name,
+
+          whatIEnjoy: portfolio.whatIEnjoy,
+          whatIveTried: portfolio.whatIveTried,
+          whatImCuriousAbout: portfolio.whatImCuriousAbout,
+
+          items,
+
+          exportedAt: new Date().toISOString()
+
+        }, null, 2);
+
+        exportButton.disabled = false;
+        copyButton.disabled = false;
+
+        if (exportAlert) {
+          exportAlert.classList.add("d-none");
+        }
+
+      } catch (e) {
+        show(exportAlert, `เตรียม Export ไม่สำเร็จ: ${e.message}`);
+      }
+    }
+
+    // ---------- เมื่อเลือก Portfolio สำหรับ Export ----------
+    exportSelect.addEventListener("change", prepareExport);
+
+    // ---------- ดาวน์โหลด JSON ----------
+    exportButton?.addEventListener("click", () => {
+      if (!exportPayload) return;
+
+      const blob = new Blob(
+        [exportPayload],
+        { type: "application/json;charset=utf-8" }
+      );
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+
+      a.href = url;
+      a.download = "my-portfolio.json";
+      a.click();
+
+      URL.revokeObjectURL(url);
+
+      show(exportAlert, "Export Portfolio สำเร็จ", "success");
+    });
+
+    // ---------- คัดลอก JSON ----------
+    copyButton?.addEventListener("click", async () => {
+      if (!exportPayload) return;
+
+      try {
+        await navigator.clipboard.writeText(exportPayload);
+
+        show(exportAlert, "คัดลอก JSON เรียบร้อยแล้ว", "success");
+
+      } catch {
+        show(
+          exportAlert,
+          "คัดลอกไม่สำเร็จ กรุณาใช้ Export ดาวน์โหลดไฟล์แทน"
+        );
+      }
+    });
+  }
+
+  // ---------- เริ่มทำงานเมื่อ DOM โหลดเสร็จ ----------
+  document.addEventListener("DOMContentLoaded", init);
+
+})();
