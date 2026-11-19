@@ -170,3 +170,208 @@
       ? globalThis
       : {}
 );
+
+(function (globalScope) {
+  "use strict";
+
+  const PORTFOLIOS_STORAGE_KEY = "portfolios";
+
+  function getEvidenceValidator() {
+    if (globalScope && typeof globalScope.validateEvidenceUrls === "function") {
+      return globalScope.validateEvidenceUrls;
+    }
+    if (
+      typeof module !== "undefined" &&
+      module.exports &&
+      typeof module.exports.validateEvidenceUrls === "function"
+    ) {
+      return module.exports.validateEvidenceUrls;
+    }
+    return null;
+  }
+
+  function extractTrimmedReflection(existingReflection, incomingReflection) {
+    const existing =
+      existingReflection &&
+      typeof existingReflection === "object" &&
+      !Array.isArray(existingReflection)
+        ? existingReflection
+        : {};
+    const incoming =
+      incomingReflection &&
+      typeof incomingReflection === "object" &&
+      !Array.isArray(incomingReflection)
+        ? incomingReflection
+        : {};
+
+    function readField(fieldName) {
+      if (Object.prototype.hasOwnProperty.call(incoming, fieldName)) {
+        const value = incoming[fieldName];
+        return typeof value === "string" ? value.trim() : "";
+      }
+      const existingValue = existing[fieldName];
+      return typeof existingValue === "string" ? existingValue.trim() : "";
+    }
+
+    return {
+      whatIDid: readField("whatIDid"),
+      whatILearned: readField("whatILearned"),
+      challenge: readField("challenge"),
+      nextStep: readField("nextStep")
+    };
+  }
+
+  async function updateImportedItem(itemId, updates, serverEndpoint) {
+    if (typeof itemId !== "string" || !itemId.trim()) {
+      return { success: false, message: "Item not found" };
+    }
+
+    let portfolios;
+    try {
+      if (typeof localStorage === "undefined") {
+        return { success: false, message: "Item not found" };
+      }
+      const rawPortfolios = localStorage.getItem(PORTFOLIOS_STORAGE_KEY);
+      if (!rawPortfolios) {
+        return { success: false, message: "Item not found" };
+      }
+      portfolios = JSON.parse(rawPortfolios);
+    } catch (error) {
+      return { success: false, message: "Item not found" };
+    }
+
+    if (!Array.isArray(portfolios) || portfolios.length === 0) {
+      return { success: false, message: "Item not found" };
+    }
+
+    let targetPortfolio = null;
+    let targetItem = null;
+
+    for (let index = 0; index < portfolios.length; index += 1) {
+      const portfolio = portfolios[index];
+      if (
+        !portfolio ||
+        typeof portfolio !== "object" ||
+        !Array.isArray(portfolio.items)
+      ) {
+        continue;
+      }
+
+      const foundItem = portfolio.items.find(
+        entry =>
+          entry &&
+          typeof entry === "object" &&
+          (entry.id === itemId || entry.exchangeId === itemId)
+      );
+
+      if (foundItem) {
+        targetPortfolio = portfolio;
+        targetItem = foundItem;
+        break;
+      }
+    }
+
+    if (!targetPortfolio || !targetItem) {
+      return { success: false, message: "Item not found" };
+    }
+
+    const safeUpdates =
+      updates && typeof updates === "object" && !Array.isArray(updates)
+        ? updates
+        : {};
+    const evidenceValidator = getEvidenceValidator();
+    if (!evidenceValidator) {
+      return { success: false, message: "Evidence validator is unavailable" };
+    }
+
+    const evidenceInput = Object.prototype.hasOwnProperty.call(
+      safeUpdates,
+      "evidence"
+    )
+      ? safeUpdates.evidence
+      : targetItem.evidence;
+    const evidenceResult = evidenceValidator(evidenceInput);
+
+    if (!evidenceResult || evidenceResult.isValid !== true) {
+      return {
+        success: false,
+        errors:
+          evidenceResult && Array.isArray(evidenceResult.errors)
+            ? evidenceResult.errors
+            : ["รูปแบบข้อมูล Evidence ไม่ถูกต้อง"]
+      };
+    }
+
+    const snapshotBackup = JSON.stringify(portfolios);
+
+    try {
+      targetItem.reflection = extractTrimmedReflection(
+        targetItem.reflection,
+        safeUpdates.reflection
+      );
+      targetItem.evidence = Array.isArray(evidenceResult.validUrls)
+        ? [...evidenceResult.validUrls]
+        : [];
+      targetItem.updatedAt = new Date().toISOString();
+
+      const endpoint =
+        typeof serverEndpoint === "string" ? serverEndpoint.trim() : "";
+      if (endpoint) {
+        if (typeof fetch !== "function") {
+          throw new Error("Fetch API is not available");
+        }
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            portfolioId: targetPortfolio.portfolioId,
+            itemId: targetItem.id || itemId,
+            item: targetItem
+          })
+        });
+        if (!response || !response.ok) {
+          const statusCode =
+            response && typeof response.status === "number"
+              ? response.status
+              : "unknown";
+          throw new Error(`Remote save failed with status ${statusCode}`);
+        }
+      }
+
+      localStorage.setItem(PORTFOLIOS_STORAGE_KEY, JSON.stringify(portfolios));
+    } catch (error) {
+      try {
+        localStorage.setItem(PORTFOLIOS_STORAGE_KEY, snapshotBackup);
+      } catch (rollbackError) {
+      }
+      return {
+        success: false,
+        message:
+          error && typeof error.message === "string" && error.message
+            ? error.message
+            : "Failed to update item"
+      };
+    }
+
+    return {
+      success: true,
+      item: targetItem
+    };
+  }
+
+  if (globalScope) {
+    globalScope.updateImportedItem = updateImportedItem;
+  }
+
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports.updateImportedItem = updateImportedItem;
+  }
+})(
+  typeof window !== "undefined"
+    ? window
+    : typeof globalThis !== "undefined"
+      ? globalThis
+      : {}
+);
