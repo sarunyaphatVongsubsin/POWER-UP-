@@ -96,3 +96,77 @@
       ? globalThis
       : {}
 );
+
+(function (globalScope) {
+  "use strict";
+
+  const REQUIRED_REFLECTION_FIELDS = [
+    "whatIDid",
+    "whatILearned",
+    "challenge",
+    "nextStep"
+  ];
+
+  function isItemSubmissionReady(item) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      return false;
+    }
+
+    const reflection = item.reflection;
+    if (
+      !reflection ||
+      typeof reflection !== "object" ||
+      Array.isArray(reflection)
+    ) {
+      return false;
+    }
+
+    const hasCompleteReflection = REQUIRED_REFLECTION_FIELDS.every(field => {
+      const value = reflection[field];
+      return typeof value === "string" && value.trim().length > 0;
+    });
+
+    if (!hasCompleteReflection) {
+      return false;
+    }
+
+    if (!Array.isArray(item.evidence) && typeof item.evidence !== "string") {
+      return false;
+    }
+
+    const validator =
+      globalScope && typeof globalScope.validateEvidenceUrls === "function"
+        ? globalScope.validateEvidenceUrls
+        : typeof module !== "undefined" &&
+            module.exports &&
+            typeof module.exports.validateEvidenceUrls === "function"
+          ? module.exports.validateEvidenceUrls
+          : null;
+
+    if (!validator) {
+      return false;
+    }
+
+    const evidenceResult = validator(item.evidence);
+    return Boolean(
+      evidenceResult &&
+        evidenceResult.isValid === true &&
+        Array.isArray(evidenceResult.validUrls) &&
+        evidenceResult.validUrls.length >= 1
+    );
+  }
+
+  if (globalScope) {
+    globalScope.isItemSubmissionReady = isItemSubmissionReady;
+  }
+
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports.isItemSubmissionReady = isItemSubmissionReady;
+  }
+})(
+  typeof window !== "undefined"
+    ? window
+    : typeof globalThis !== "undefined"
+      ? globalThis
+      : {}
+);
