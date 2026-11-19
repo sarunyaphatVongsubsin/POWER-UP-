@@ -111,3 +111,65 @@
       ? globalThis
       : {}
 );
+
+(function (globalScope) {
+  "use strict";
+
+  function exportPortfolio(portfolioId) {
+    if (typeof portfolioId !== "string" || !portfolioId.trim()) {
+      return null;
+    }
+
+    let portfolios;
+    try {
+      if (typeof localStorage === "undefined") {
+        return null;
+      }
+      const raw = localStorage.getItem("portfolios");
+      if (!raw) {
+        return null;
+      }
+      portfolios = JSON.parse(raw);
+    } catch (error) {
+      return null;
+    }
+
+    if (!Array.isArray(portfolios)) {
+      return null;
+    }
+
+    const portfolio = portfolios.find(
+      entry => entry && typeof entry === "object" && entry.portfolioId === portfolioId
+    );
+
+    if (!portfolio) {
+      return null;
+    }
+
+    const exportData = {
+      portfolioId: portfolio.portfolioId,
+      name: portfolio.name,
+      whatIEnjoy: portfolio.whatIEnjoy,
+      whatIveTried: portfolio.whatIveTried,
+      whatImCuriousAbout: portfolio.whatImCuriousAbout,
+      items: Array.isArray(portfolio.items) ? portfolio.items : [],
+      exportedAt: new Date().toISOString()
+    };
+
+    return JSON.stringify(exportData, null, 2);
+  }
+
+  if (globalScope) {
+    globalScope.exportPortfolio = exportPortfolio;
+  }
+
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports.exportPortfolio = exportPortfolio;
+  }
+})(
+  typeof window !== "undefined"
+    ? window
+    : typeof globalThis !== "undefined"
+      ? globalThis
+      : {}
+);
