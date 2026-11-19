@@ -4,7 +4,7 @@ const CHALLENGE_CONFIG = {
 
   challengeId: "ch-powerup-01",
 
-  hostGroup: "G704",
+  hostGroup: "Group 6",
 
   title: "Website Detective: UX Auditing",
 
