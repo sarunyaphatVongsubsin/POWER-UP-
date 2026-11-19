@@ -61,3 +61,19 @@ https://github.com/sarunyaphatVongsubsin/POWER-UP-
 | **6** | `นายภัทรพล วงษ์โฉม` | `6909650647` | [@Pattarapol-wongchom](https://github.com/Pattarapol-wongchom) | `#7` Define Portfolio Data Structure<br>`#8` Validate Portfolio and Item Data | **Data Schema Definition & Input Validation Logic** |
 | **7** | `นายธัชธรรม ปั้นขุนทด` | `6909650480` | [@ThatchathamPankhunthod](https://github.com/ThatchathamPankhunthod) | `#9` Save and Load Data with localStorage<br>`#10` Add and Manage Portfolio Items | **Storage Engine & Item CRUD Management** |
 | **8** | `นายวโรตม์ วิไล` | `6909650696` | [@varotvil-sketch](https://github.com/varotvil-sketch) | `#11` Support Multiple Portfolios and Data Selection<br>`#12` Prepare Sample Data and Reset Functionality | **Multi-Profile Switching & Sample/Reset Engine** |
+
+### 6. ระบบจัดเก็บข้อมูลด้วย PHP (สำหรับเวอร์ชัน Server)
+
+- เวอร์ชันที่เชื่อมต่อ PHP ต้องเปิดผ่าน Web Server ที่รองรับ PHP เท่านั้น เช่น Apache หรือ PHP Built-in Server
+- GitHub Pages รองรับเฉพาะเว็บไซต์แบบ Static จึงไม่สามารถประมวลผลไฟล์ PHP หรือบันทึก Portfolio ลง Server ผ่าน PHP ได้
+- วิธีตั้งค่าและทดลองใช้งานดูที่ไฟล์ `PHP-SETUP.md`
+- ข้อมูล Portfolio และ Portfolio Item (รวม Reflection) จะถูกเก็บในไฟล์ JSON ฝั่ง Server ไม่ใช่ LocalStorage
+
+
+### 6. PHP Server Storage และ Import / Export
+- ระบบจัดเก็บข้อมูลหลักอยู่บน Server ผ่าน PHP API และไฟล์ JSON
+- Import Portfolio Item ได้จากไฟล์ `.json` หรือวาง JSON พร้อม Preview และตรวจสอบข้อมูลก่อนบันทึก
+- ป้องกันการ Import Item ID ซ้ำใน Portfolio เดียวกัน
+- Export Portfolio เป็นไฟล์ JSON หรือ Copy JSON พร้อม Submission Checklist
+- ตั้งค่าและวิธีทดลองระบบได้จาก `PHP-SETUP.md`
+- ต้องเปิดผ่าน Hosting ที่รองรับ PHP หรือ PHP Built-in Server; GitHub Pages/Live Server ไม่สามารถประมวลผล PHP ได้

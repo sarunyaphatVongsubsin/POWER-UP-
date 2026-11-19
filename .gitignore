@@ -1,4 +1,9 @@
-*.pem
-*.key
-.env
-local-data/
+# Runtime data (never commit user portfolios)
+api/local-data/*
+!api/local-data/.gitkeep
+api/local-data/.htaccess
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
