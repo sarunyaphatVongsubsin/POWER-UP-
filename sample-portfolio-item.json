@@ -1,34 +1,21 @@
 {
-    "schema": "powerup-portfolio-item",
-    "version": 1,
-    "exchangeId": "exchange-group-a-001",
-    "issuedAt": "2026-11-18T10:00:00.000Z",
-    "source": {
-        "group": "Group A",
-        "booth": "Challenge Booth",
-        "challenge": "Website Design Challenge",
-        "host": "Test Host"
+    "id": "item-sample-001",
+    "title": "My First Website",
+    "type": "Course Assignment",
+    "date": "2026-10-18",
+    "role": "Developer",
+    "description": "Created a personal website",
+    "skills": [
+        "HTML",
+        "CSS"
+    ],
+    "reflection": {
+        "whatIDid": "Built the website",
+        "whatILearned": "Responsive design",
+        "challenge": "Mobile layout",
+        "nextStep": "Improve the design"
     },
-    "item": {
-        "id": "item-sample-001",
-        "title": "Website Design Challenge",
-        "type": "Challenge",
-        "date": "2026-11-18",
-        "role": "Participant",
-        "description": "ออกแบบหน้าเว็บไซต์ตามโจทย์ที่ได้รับจากกิจกรรม",
-        "skills": [
-            "HTML",
-            "CSS",
-            "Problem Solving"
-        ],
-        "reflection": {
-            "whatIDid": "ออกแบบหน้าเว็บไซต์ตามโจทย์ที่กำหนด",
-            "whatILearned": "ได้เรียนรู้การจัดวางองค์ประกอบเว็บไซต์",
-            "challenge": "การจัดการเวลาในการทำงาน",
-            "nextStep": "ฝึกพัฒนาเว็บไซต์ให้มีความ Responsive มากขึ้น"
-        },
-        "evidence": [
-            "https://github.com/example/project"
-        ]
-    }
+    "evidence": [
+        "https://example.com/my-work"
+    ]
 }
