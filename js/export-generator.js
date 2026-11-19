@@ -173,3 +173,134 @@
       ? globalThis
       : {}
 );
+
+(function (globalScope) {
+  "use strict";
+
+  function downloadJsonFile(filename, jsonString) {
+    if (
+      jsonString === null ||
+      jsonString === undefined ||
+      typeof document === "undefined" ||
+      typeof Blob === "undefined" ||
+      typeof URL === "undefined" ||
+      typeof URL.createObjectURL !== "function"
+    ) {
+      return false;
+    }
+
+    const content =
+      typeof jsonString === "string"
+        ? jsonString
+        : JSON.stringify(jsonString, null, 2);
+    const safeFilename =
+      typeof filename === "string" && filename.trim()
+        ? filename.trim()
+        : "export.json";
+
+    const blob = new Blob([content], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = safeFilename;
+    link.style.display = "none";
+
+    try {
+      if (document.body) {
+        document.body.appendChild(link);
+      }
+      link.click();
+    } finally {
+      if (link.parentNode) {
+        link.parentNode.removeChild(link);
+      }
+      if (typeof URL.revokeObjectURL === "function") {
+        if (typeof setTimeout === "function") {
+          setTimeout(() => {
+            URL.revokeObjectURL(url);
+          }, 1000);
+        } else {
+          URL.revokeObjectURL(url);
+        }
+      }
+    }
+
+    return true;
+  }
+
+  async function copyJsonToClipboard(jsonString) {
+    if (jsonString === null || jsonString === undefined) {
+      return false;
+    }
+
+    const text =
+      typeof jsonString === "string"
+        ? jsonString
+        : JSON.stringify(jsonString, null, 2);
+
+    if (
+      typeof navigator !== "undefined" &&
+      navigator.clipboard &&
+      typeof navigator.clipboard.writeText === "function"
+    ) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+      }
+    }
+
+    if (typeof document === "undefined" || !document.body) {
+      return false;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.top = "-9999px";
+    textarea.style.left = "-9999px";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+
+    const previousActiveElement = document.activeElement;
+    let copied = false;
+
+    try {
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, text.length);
+      copied = Boolean(document.execCommand("copy"));
+    } catch (error) {
+      copied = false;
+    } finally {
+      if (textarea.parentNode) {
+        textarea.parentNode.removeChild(textarea);
+      }
+      if (
+        previousActiveElement &&
+        typeof previousActiveElement.focus === "function"
+      ) {
+        previousActiveElement.focus();
+      }
+    }
+
+    return copied;
+  }
+
+  if (globalScope) {
+    globalScope.downloadJsonFile = downloadJsonFile;
+    globalScope.copyJsonToClipboard = copyJsonToClipboard;
+  }
+
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports.downloadJsonFile = downloadJsonFile;
+    module.exports.copyJsonToClipboard = copyJsonToClipboard;
+  }
+})(
+  typeof window !== "undefined"
+    ? window
+    : typeof globalThis !== "undefined"
+      ? globalThis
+      : {}
+);
