@@ -12,11 +12,38 @@
   // ---------- API Request ----------
   async function request(url, options = {}) {
     const response = await fetch(url, options);
+    const raw = await response.text();
 
-    const data = await response.json();
+    let data;
+
+    try {
+      data = raw.trim() ? JSON.parse(raw) : {};
+    } catch {
+      // PHP errors may be returned as HTML (for example <br><b>Warning</b>).
+      const readable = raw
+        .replace(/<br\s*\/?\s*>/gi, " ")
+        .replace(/<\/?b>/gi, "")
+        .replace(/<[^>]*>/g, " ")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#039;|&apos;/gi, "'")
+        .replace(/&amp;/gi, "&")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 500);
+
+      const detail = readable || "Server ไม่ได้ส่ง JSON กลับมา";
+      throw new Error(
+        `Server ตอบกลับไม่ใช่ JSON (HTTP ${response.status}): ${detail}`
+      );
+    }
 
     if (!response.ok) {
       throw new Error(data.error || `Request failed (${response.status})`);
+    }
+
+    if (data && data.error) {
+      throw new Error(data.error);
     }
 
     return data;
@@ -233,12 +260,16 @@
     const copyButton = $("btn-copy-json");
 
     const exportAlert = $("export-status-alert");
+    const activePortfolioSelect = $("portfolio-select");
+    const importModalEl = $("import-modal");
+    const importModal = importModalEl && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(importModalEl) : null;
 
     if (!targetSelect || !exportSelect) return;
 
     let portfolios = [];
     let verifiedItem = null;
     let exportPayload = "";
+    let isImporting = false;
 
     // ---------- โหลด Portfolio จาก Server ----------
     try {
@@ -246,10 +277,52 @@
 
       fillSelect(targetSelect, portfolios);
       fillSelect(exportSelect, portfolios);
+      syncImportTarget();
 
     } catch (e) {
       show(error, `โหลดรายชื่อ Portfolio ไม่สำเร็จ: ${e.message}`);
     }
+
+    // ---------- ใช้ Portfolio ที่เปิดอยู่เป็นค่าเริ่มต้น ----------
+    function syncImportTarget() {
+      if (!targetSelect) return;
+
+      // ใช้รายการล่าสุดจาก Dropdown หลัก เพื่อให้ Portfolio ที่เพิ่งสร้างแสดงใน Modal ด้วย
+      if (activePortfolioSelect?.options.length > 1) {
+        const activeOptions = Array.from(activePortfolioSelect.options).filter(option => option.value);
+        targetSelect.innerHTML = "";
+        activeOptions.forEach(source => {
+          const option = document.createElement("option");
+          option.value = source.value;
+          option.textContent = source.textContent;
+          targetSelect.appendChild(option);
+        });
+      }
+
+      const activeId = activePortfolioSelect?.value || localStorage.getItem("currentPortfolioId") || "";
+      if (activeId && Array.from(targetSelect.options).some(option => option.value === activeId)) {
+        targetSelect.value = activeId;
+      } else if (targetSelect.options.length) {
+        targetSelect.selectedIndex = 0;
+      }
+    }
+
+    activePortfolioSelect?.addEventListener("change", syncImportTarget);
+    importModalEl?.addEventListener("show.bs.modal", syncImportTarget);
+    $("btn-import-item")?.addEventListener("click", () => {
+      syncImportTarget();
+      importModal?.show();
+    });
+
+    // ---------- เปลี่ยนวิธีนำเข้าระหว่าง Paste และ Upload ----------
+    function setImportMode(mode) {
+      const uploadMode = mode === "upload";
+      $("btn-paste-mode")?.classList.toggle("active", !uploadMode);
+      $("btn-upload-mode")?.classList.toggle("active", uploadMode);
+      $("import-upload-panel")?.classList.toggle("d-none", !uploadMode);
+    }
+    $("btn-paste-mode")?.addEventListener("click", () => setImportMode("paste"));
+    $("btn-upload-mode")?.addEventListener("click", () => setImportMode("upload"));
 
     // ---------- รีเซ็ต Preview ----------
     function resetPreview() {
@@ -374,21 +447,31 @@
         return;
       }
 
+      const destination = portfolios.find(p => p.portfolioId === targetSelect.value);
+      const duplicate = destination?.items?.some(item => item.id === result.data.id);
+      if (duplicate) {
+        show(error, `Item ID "${result.data.id}" มีอยู่ใน Portfolio นี้แล้ว`);
+        resetPreview();
+        return;
+      }
+
       verifiedItem = result.data;
 
       $("prev-id").textContent = verifiedItem.id;
       $("prev-title").textContent = verifiedItem.title;
       $("prev-type").textContent = verifiedItem.type;
+      $("prev-date").textContent = verifiedItem.date;
       $("prev-skills").textContent = verifiedItem.skills.join(", ");
 
       preview.classList.remove("d-none");
       importButton.disabled = false;
     });
 
-    // ---------- ยืนยัน Import ลง Server ----------
-    importButton?.addEventListener("click", async () => {
-      if (!verifiedItem || !targetSelect.value) return;
+    // ---------- ยืนยัน Import ลง Server (single guarded handler) ----------
+    async function performImport() {
+      if (isImporting || !verifiedItem || !targetSelect.value) return;
 
+      isImporting = true;
       importButton.disabled = true;
 
       status.className = "alert alert-info py-2 px-3 mb-3";
@@ -396,38 +479,73 @@
       status.classList.remove("d-none");
 
       try {
-        await request("api/import-item.php", {
-          method: "POST",
+        const destinationPortfolioId = targetSelect.value;
 
+        const importResult = await request("api/import-item.php", {
+          method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-
           body: JSON.stringify({
-            portfolioId: targetSelect.value,
+            portfolioId: destinationPortfolioId,
             item: verifiedItem
           })
         });
 
+        // Keep the legacy Submission Helper's local checklist data in sync.
+        // The Server remains the source of truth for the Portfolio itself.
+        try {
+          const checklistKey = `portfolio_${destinationPortfolioId}_items`;
+          const checklistItems = JSON.parse(localStorage.getItem(checklistKey) || "[]");
+          const savedItem = importResult.item || verifiedItem;
+          if (!checklistItems.some(item => item.id === savedItem.id)) {
+            checklistItems.push(savedItem);
+            localStorage.setItem(checklistKey, JSON.stringify(checklistItems));
+          }
+        } catch (storageError) {
+          console.warn("อัปเดตข้อมูล Submission Helper ใน LocalStorage ไม่สำเร็จ:", storageError);
+        }
+
+        if (typeof window.refreshPortfolioData !== "function") {
+          throw new Error("ไม่พบฟังก์ชัน Refresh Portfolio จาก Server");
+        }
+        portfolios = await window.refreshPortfolioData();
+
+        if (exportSelect && Array.from(exportSelect.options).some(option => option.value === destinationPortfolioId)) {
+          exportSelect.value = destinationPortfolioId;
+          exportSelect.dispatchEvent(new Event("change"));
+        }
+
         status.className = "alert alert-success py-2 px-3 mb-3";
-
-        statusText.textContent =
-          "Import สำเร็จ! บันทึก Item ลง Server แล้ว กรุณา Refresh หน้าเพื่อดูข้อมูล";
-
-        show(error, "", "success");
+        statusText.textContent = "Import สำเร็จ! เพิ่ม Item ลงใน Portfolio แล้ว";
 
         verifiedItem = null;
         textArea.value = "";
-
+        if (fileInput) fileInput.value = "";
         preview.classList.add("d-none");
+
+        if (typeof window.showStatus === "function") {
+          window.showStatus("Import Portfolio Item สำเร็จแล้ว", "success");
+        }
+
+        importModal?.hide();
 
       } catch (e) {
         status.className = "alert alert-danger py-2 px-3 mb-3";
-
         statusText.textContent = `Import ไม่สำเร็จ: ${e.message}`;
-
         importButton.disabled = false;
+      } finally {
+        isImporting = false;
       }
+    }
+
+    importButton?.addEventListener("click", performImport);
+    $("btn-retry-import")?.addEventListener("click", performImport);
+
+    importModalEl?.addEventListener("hidden.bs.modal", () => {
+      resetPreview();
+      error?.classList.add("d-none");
+      status?.classList.add("d-none");
     });
 
     // ---------- เตรียมข้อมูล Export ----------
