@@ -680,15 +680,15 @@
       if (!exportPayload) return;
 
       try {
-        await navigator.clipboard.writeText(exportPayload);
+        const copied = await window.copyJsonToClipboard(exportPayload);
 
-        show(exportAlert, "คัดลอก JSON เรียบร้อยแล้ว", "success");
-
+        if (copied) {
+          show(exportAlert, "คัดลอก JSON เรียบร้อยแล้ว", "success");
+        } else {
+          show(exportAlert, "คัดลอกไม่สำเร็จ กรุณาใช้ Export ดาวน์โหลดไฟล์แทน");
+        }
       } catch {
-        show(
-          exportAlert,
-          "คัดลอกไม่สำเร็จ กรุณาใช้ Export ดาวน์โหลดไฟล์แทน"
-        );
+        show(exportAlert, "คัดลอกไม่สำเร็จ กรุณาใช้ Export ดาวน์โหลดไฟล์แทน");
       }
     });
   }

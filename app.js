@@ -1103,10 +1103,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const jsonString = JSON.stringify(currentExportPayload, null, 2);
       try {
-        await navigator.clipboard.writeText(jsonString);
-        showExportMessage('คัดลอกข้อมูล JSON ลงคลิปบอร์ดเรียบร้อยแล้ว');
+        const copied = await window.copyJsonToClipboard(jsonString);
+        if (copied) {
+          showExportMessage('คัดลอกข้อมูล JSON ลงคลิปบอร์ดเรียบร้อยแล้ว');
+        } else {
+          showExportMessage('คัดลอกไม่สำเร็จ กรุณาใช้ปุ่ม Export ดาวน์โหลดไฟล์แทน');
+        }
       } catch (err) {
-        showExportMessage('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณากดปุ่ม Export แทน');
+        showExportMessage('คัดลอกไม่สำเร็จ กรุณาใช้ปุ่ม Export ดาวน์โหลดไฟล์แทน');
       }
     });
   }
