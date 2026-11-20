@@ -1211,3 +1211,39 @@ html {
     border-color: #E9A3C2;
     color: #FFFFFF;
 }
+
+/* Edit Profile / Portfolio Item controls */
+.profile-header { display:flex; align-items:center; flex-wrap:wrap; gap:.65rem; }
+.profile-header #profile-name { margin-right:auto; }
+.btn-edit-profile, .btn-edit-item {
+    background:#fff;
+    border:1.5px solid #E9A3C2;
+    color:#D98BAA;
+    border-radius:999px;
+    font-weight:600;
+    transition:all .2s ease;
+}
+.btn-edit-profile:hover, .btn-edit-item:hover {
+    background:#E9A3C2;
+    color:#fff;
+    border-color:#E9A3C2;
+}
+.item-footer { display:flex; justify-content:flex-end; align-items:center; gap:.55rem; flex-wrap:wrap; }
+.edit-modal-overlay {
+    position:fixed; inset:0; z-index:2000; display:flex; align-items:center; justify-content:center;
+    padding:1rem; background:rgba(38,20,34,.48); overflow-y:auto;
+}
+.edit-modal-box {
+    width:min(760px,100%); max-height:calc(100vh - 2rem); overflow-y:auto;
+    background:#fff; border:1px solid #E9A3C2; border-radius:1.25rem;
+    padding:clamp(1rem,3vw,1.75rem); box-shadow:0 18px 60px rgba(75,30,55,.2);
+}
+.edit-modal-box h3 { color:var(--secondary); font-weight:800; margin-bottom:1.1rem; }
+.edit-modal-actions { display:flex; justify-content:flex-end; gap:.65rem; margin-top:1.25rem; }
+.edit-modal-actions button { border-radius:999px; padding:.55rem 1.2rem; }
+@media(max-width:575.98px) {
+    .profile-header #profile-name { width:100%; }
+    .edit-modal-actions { flex-direction:column-reverse; }
+    .edit-modal-actions button { width:100%; }
+}
+
