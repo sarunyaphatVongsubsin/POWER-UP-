@@ -305,6 +305,25 @@ async function initializeApp() {
 
   // โหลด Portfolio จาก PHP API; ข้อมูลจริงถูกเก็บในไฟล์ JSON บน Server
   let portfolios = [];
+
+  // Public refresh hook used by the single Import Modal workflow.
+  // Keep the current Portfolio ID while reloading authoritative Server data.
+  window.refreshPortfolioData = async function refreshPortfolioData() {
+    const selectedPortfolioId = localStorage.getItem(CURRENT_ID_KEY);
+    portfolios = await loadPortfoliosFromServer();
+
+    if (selectedPortfolioId && portfolios.some(p => p.portfolioId === selectedPortfolioId)) {
+      localStorage.setItem(CURRENT_ID_KEY, selectedPortfolioId);
+    } else if (portfolios.length) {
+      localStorage.setItem(CURRENT_ID_KEY, portfolios[0].portfolioId);
+    } else {
+      localStorage.removeItem(CURRENT_ID_KEY);
+    }
+
+    renderAll();
+    return portfolios;
+  };
+
   try {
     portfolios = await loadPortfoliosFromServer();
   } catch (error) {
@@ -782,216 +801,7 @@ if (document.readyState === "loading") {
 }
 
 
-// === โค้ดระบบ Import Portfolio Item (Issue #25) ===
-document.addEventListener('DOMContentLoaded', () => {
-  const targetPortSelect = document.getElementById('import-target-port');
-  const btnDownloadSample = document.getElementById('btn-download-sample');
-  const dropZone = document.getElementById('import-drop-zone');
-  const fileInput = document.getElementById('import-file-input');
-  const textarea = document.getElementById('import-textarea');
-  const errorAlert = document.getElementById('import-error-alert');
-  const previewBox = document.getElementById('import-preview-box');
-  const statusBox = document.getElementById('import-status-box');
-  const statusText = document.getElementById('import-status-text');
-  const btnRetry = document.getElementById('btn-retry-import');
-  const btnPreview = document.getElementById('btn-preview-json');
-  const btnImport = document.getElementById('btn-confirm-import');
-
-  let verifiedItemData = null;
-
-  // 1. ปุ่มดาวน์โหลดไฟล์ตัวอย่าง
-  if (btnDownloadSample) {
-    btnDownloadSample.addEventListener('click', () => {
-      const sampleItem = {
-        id: "item-sample-999",
-        title: "Sample Portfolio Item",
-        type: "Course Assignment",
-        date: "2026-11-18",
-        role: "Developer",
-        description: "ตัวอย่างรายละเอียดผลงานสำหรับการทดสอบระบบ Import",
-        skills: ["JavaScript", "Bootstrap 5", "JSON Schema"],
-        reflection: {
-          whatIDid: "พัฒนาฟังก์ชันนำเข้าข้อมูลผลงาน",
-          whatILearned: "การตรวจสอบโครงสร้าง JSON และการจัดการ Error",
-          challenge: "การป้องกันช่องโหว่ XSS และการตรวจสอบข้อมูลซ้ำ",
-          nextStep: "เชื่อมโยงกับระบบ Reflection"
-        },
-        evidence: ["https://github.com/example/repo"]
-      };
-
-      const blob = new Blob([JSON.stringify(sampleItem, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'sample-item.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-  }
-
-  // 2. ฟังก์ชันอ่านไฟล์ .json ที่อัปโหลดหรือลากมาวาง
-  function handleFile(file) {
-    hideMessages();
-    if (!file) return;
-    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
-      showError('กรุณาเลือกไฟล์นามสกุล .json เท่านั้น');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (textarea) textarea.value = e.target.result;
-      if (btnImport) btnImport.disabled = true;
-    };
-    reader.onerror = () => showError('ไม่สามารถอ่านไฟล์ได้ กรุณาลองใหม่อีกครั้ง');
-    reader.readAsText(file);
-  }
-
-  if (fileInput) {
-    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
-  }
-
-  if (dropZone) {
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-primary'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-primary'));
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-primary');
-      if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-    });
-  }
-
-  // 3. ฟังก์ชันตรวจสอบ JSON และ Schema
-  function validateJSONInput() {
-    hideMessages();
-    if (btnImport) btnImport.disabled = true;
-    verifiedItemData = null;
-
-    const portfolioId = targetPortSelect ? targetPortSelect.value : '';
-    if (!portfolioId) {
-      showError('กรุณาเลือก Portfolio ปลายทางก่อนตรวจสอบ');
-      return null;
-    }
-
-    const rawText = textarea ? textarea.value.trim() : '';
-    if (!rawText) {
-      showError('ข้อมูลในช่อง Textarea ว่างเปล่า กรุณาวาง JSON หรืออัปโหลดไฟล์');
-      return null;
-    }
-
-    let item;
-    try {
-      item = JSON.parse(rawText);
-    } catch (err) {
-      showError('รูปแบบ JSON ไม่ถูกต้อง (Syntax Error: ตรวจสอบเครื่องหมายปีกกาหรือเครื่องหมายคำพูด)');
-      return null;
-    }
-
-    if (typeof item !== 'object' || item === null || Array.isArray(item)) {
-      showError('Schema ไม่ถูกต้อง: ข้อมูลหลักต้องเป็น JSON Object ({ ... })');
-      return null;
-    }
-
-    if (!item.id || typeof item.id !== 'string') {
-      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "id" (ต้องมีและเป็นข้อความ)');
-      return null;
-    }
-    if (!item.title || typeof item.title !== 'string') {
-      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "title" (ต้องมีและเป็นข้อความ)');
-      return null;
-    }
-    if (!Array.isArray(item.skills) || item.skills.length === 0) {
-      showError('Schema ไม่ถูกต้อง: ผิดพลาดที่ฟิลด์ "skills" (ต้องเป็น Array และมีทักษะอย่างน้อย 1 ตัว)');
-      return null;
-    }
-
-    const storageKey = `portfolio_${portfolioId}_items`;
-    const existingItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const isDuplicate = existingItems.some(existing => existing.id === item.id);
-    if (isDuplicate) {
-      showError(`Item นี้ (id: "${item.id}") ถูก import เข้า Portfolio นี้ไปแล้ว`);
-      return null;
-    }
-
-    return item;
-  }
-
-  // 4. ปุ่ม Preview (ใช้ textContent ป้องกัน XSS)
-  if (btnPreview) {
-    btnPreview.addEventListener('click', () => {
-      const validItem = validateJSONInput();
-      if (!validItem) return;
-
-      verifiedItemData = validItem;
-      document.getElementById('prev-id').textContent = validItem.id;
-      document.getElementById('prev-title').textContent = validItem.title;
-      document.getElementById('prev-type').textContent = validItem.type || 'N/A';
-      document.getElementById('prev-skills').textContent = validItem.skills.join(', ');
-
-      if (previewBox) previewBox.classList.remove('d-none');
-      if (btnImport) btnImport.disabled = false;
-    });
-  }
-
-  // 5. ปุ่มยืนยัน Import
-  async function performImport() {
-    if (!verifiedItemData) return;
-    const portfolioId = targetPortSelect ? targetPortSelect.value : '';
-
-    if (btnImport) btnImport.disabled = true;
-    if (btnRetry) btnRetry.classList.add('d-none');
-    showStatus('กำลังบันทึกข้อมูลลงระบบ...', 'alert-info');
-
-    try {
-      await new Promise(res => setTimeout(res, 700));
-
-      const storageKey = `portfolio_${portfolioId}_items`;
-      const existingItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      existingItems.push(verifiedItemData);
-      localStorage.setItem(storageKey, JSON.stringify(existingItems));
-
-      showStatus('Import สำเร็จ! กำลังพาไปยังหน้า Reflection / Evidence...', 'alert-success');
-
-      setTimeout(() => {
-        window.location.href = `booth.html?portfolioId=${encodeURIComponent(portfolioId)}&itemId=${encodeURIComponent(verifiedItemData.id)}`;
-      }, 1000);
-
-    } catch (err) {
-      showStatus('บันทึกล้มเหลว: ไม่สามารถบันทึกข้อมูลลงระบบได้', 'alert-danger');
-      if (btnRetry) btnRetry.classList.remove('d-none');
-    }
-  }
-
-  if (btnImport) btnImport.addEventListener('click', performImport);
-  if (btnRetry) btnRetry.addEventListener('click', performImport);
-
-  if (textarea) {
-    textarea.addEventListener('input', () => {
-      if (btnImport) btnImport.disabled = true;
-      if (previewBox) previewBox.classList.add('d-none');
-    });
-  }
-
-  function showError(msg) {
-    if (errorAlert) {
-      errorAlert.textContent = msg;
-      errorAlert.classList.remove('d-none');
-    }
-    if (previewBox) previewBox.classList.add('d-none');
-  }
-
-  function showStatus(msg, alertClass) {
-    if (statusBox && statusText) {
-      statusBox.className = `alert ${alertClass} py-2 px-3 mb-3`;
-      statusText.textContent = msg;
-      statusBox.classList.remove('d-none');
-    }
-  }
-
-  function hideMessages() {
-    if (errorAlert) errorAlert.classList.add('d-none');
-    if (statusBox) statusBox.classList.add('d-none');
-  }
-});
+// Import Modal workflow is owned exclusively by js/portfolio-transfer.js.
 
 // === โค้ดระบบ Export My Portfolio & Submission Helper (Issue #26) ===
 document.addEventListener('DOMContentLoaded', () => {

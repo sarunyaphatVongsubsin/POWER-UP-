@@ -79,7 +79,7 @@
                         </button>
 
                         <button id="btn-reset-data" class="btn btn-reset" type="button">
-                            <i class="bi bi-trash3"></i>
+                            <i class="bi bi-arrow-repeat"></i>
                             Reset Data
                         </button>
 
@@ -88,6 +88,7 @@
                     <!-- Mobile Reset -->
                     <div class="mobile-reset">
                         <button type="button" class="btn btn-reset">
+                            <i class="bi bi-arrow-repeat"></i>
                             Reset Data
                         </button>
                     </div>
@@ -225,7 +226,7 @@
                             </p>
                         </div>
                         <button type="button" class="btn rounded-pill px-3" id="btn-import-item">
-                            <i class="bi bi-upload"></i>
+                            <i class="bi bi-arrow-down-circle"></i>
                             Import Item
                         </button>
                     </div>
@@ -411,10 +412,62 @@
                         <textarea id="import-textarea" class="form-control font-monospace import-json-editor" rows="7" placeholder="วางข้อมูล JSON ของผลงานที่นี่..."></textarea>
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2"><small class="text-muted"><i class="bi bi-info-circle"></i> รองรับไฟล์ .json หรือวางข้อมูล JSON ได้โดยตรง</small><span class="badge rounded-pill text-bg-success">ตรวจสอบก่อน Import</span></div>
                         <div id="import-error-alert" class="alert alert-danger d-none py-2 px-3 mt-3 mb-3" role="alert"></div>
-                        <div id="import-preview-box" class="card bg-light border-0 p-3 my-3 d-none"><h6 class="fw-bold mb-2">ตัวอย่างข้อมูลที่จะนำเข้า (Preview)</h6><p class="mb-1 small"><strong>รหัสผลงาน:</strong> <span id="prev-id"></span></p><p class="mb-1 small"><strong>ชื่อผลงาน:</strong> <span id="prev-title"></span></p><p class="mb-1 small"><strong>ประเภท:</strong> <span id="prev-type"></span></p><p class="mb-0 small"><strong>ทักษะ:</strong> <span id="prev-skills"></span></p></div>
+                        <div id="import-preview-box" class="import-preview-card my-3 d-none">
+                            <div class="import-preview-heading">
+                                <div class="import-preview-heading-icon"><i class="bi bi-clipboard2-check"></i></div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">ตัวอย่างข้อมูลที่จะนำเข้า</h6>
+                                    <span class="import-preview-subtitle">Preview · ตรวจสอบรายละเอียดก่อนบันทึก</span>
+                                </div>
+                                <span class="import-preview-status"><i class="bi bi-check-circle-fill"></i> Validated</span>
+                            </div>
+                            <div class="import-preview-grid">
+                                <div class="import-preview-field">
+                                    <span class="import-preview-label"><i class="bi bi-hash"></i>ID</span>
+                                    <strong id="prev-id">-</strong>
+                                </div>
+                                <div class="import-preview-field">
+                                    <span class="import-preview-label"><i class="bi bi-card-heading"></i> Title</span>
+                                    <strong id="prev-title">-</strong>
+                                </div>
+                                <div class="import-preview-field">
+                                    <span class="import-preview-label"><i class="bi bi-folder2"></i> Type</span>
+                                    <strong id="prev-type">-</strong>
+                                </div>
+                                <div class="import-preview-field">
+                                    <span class="import-preview-label">
+                                        <i class="bi bi-calendar-event"></i> Date
+                                    </span>
+                                    <strong id="prev-date">-</strong>
+                                </div>
+                                <div class="import-preview-field import-preview-field-wide">
+                                    <span class="import-preview-label"><i class="bi bi-stars"></i> Skills</span>
+                                    <strong id="prev-skills">-</strong>
+                                </div>
+                            </div>
+                        </div>
                         <div id="import-status-box" class="alert d-none py-2 px-3 mt-3 mb-0" role="alert"><span id="import-status-text"></span><button type="button" id="btn-retry-import" class="btn btn-sm btn-warning ms-2 py-0 d-none">ลองใหม่</button></div>
                     </div>
-                    <div class="modal-footer border-0 pt-2"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">ยกเลิก</button><button type="button" id="btn-preview-json" class="btn btn-outline-primary rounded-pill px-4"><i class="bi bi-eye"></i> Validate &amp; Preview</button><button type="button" id="btn-confirm-import" class="btn btn-accent rounded-pill px-4" disabled><i class="bi bi-check-lg"></i> Import</button></div>
+                    <div class="modal-footer border-0 pt-2">
+                        <button type="button"
+                            class="btn btn-outline-secondary rounded-pill px-4"
+                            data-bs-dismiss="modal">
+                            ยกเลิก
+                        </button>
+                    
+                        <button type="button"
+                            id="btn-preview-json"
+                            class="btn btn-validate rounded-pill px-4">
+                            <i class="bi bi-eye"></i> Validate &amp; Preview
+                        </button>
+                    
+                        <button type="button"
+                            id="btn-confirm-import"
+                            class="btn btn-accent rounded-pill px-4"
+                            disabled>
+                            <i class="bi bi-check-lg"></i> Import
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

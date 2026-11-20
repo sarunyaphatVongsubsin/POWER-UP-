@@ -1,9 +1,31 @@
-
 <?php
 // นำเข้า Portfolio Item จาก JSON
 // และบันทึกลง Server JSON ผ่าน storage.php
 
+// ป้องกัน PHP Warning/Notice แสดงเป็น HTML ปะปนใน JSON response
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL);
+
+// แปลง PHP runtime error ที่ตรวจจับได้ให้เป็น JSON response
+set_error_handler(function ($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) {
+        return false;
+    }
+
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+
+    echo json_encode([
+        'error' => 'PHP Error: ' . $message . ' (ไฟล์ ' . basename($file) . ', บรรทัด ' . $line . ')'
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+    exit;
+});
+
 require __DIR__ . '/storage.php';
+
 
 // ตรวจสอบ Method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -182,5 +204,3 @@ foreach ($portfolios as $index => $portfolio) {
 sendJson([
     'error' => 'ไม่พบ Portfolio ปลายทาง'
 ], 404);
-
-?>
