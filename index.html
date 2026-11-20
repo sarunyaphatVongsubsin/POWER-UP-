@@ -13,6 +13,7 @@
         rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -195,10 +196,6 @@
                             <h2 class="h4 fw-bold mb-0">Portfolio Items</h2>
                             <span id="portfolio-items-count" class="badge rounded-pill">0</span>
                         </div>
-                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" id="btn-import-item">
-                            <i class="bi bi-upload"></i>
-                            Import Item
-                        </button>
                         <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 toggle-items-btn"
                             type="button" data-bs-toggle="collapse" data-bs-target="#portfolio-items-collapse"
                             aria-expanded="true" aria-controls="portfolio-items-collapse">
@@ -220,11 +217,17 @@
 
                 <!-- Add Portfolio Item -->
                 <div class="panel add-item-panel" id="add-item-section">
-                    <div class="mb-4">
-                        <h2 class="h4 fw-bold mb-1">Add Portfolio Item</h2>
-                        <p class="text-muted small mb-0">
-                            เพิ่มผลงานหรือกิจกรรมลงใน Portfolio ของคุณ
-                        </p>
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+                        <div>
+                            <h2 class="h4 fw-bold mb-1">Add Portfolio Item</h2>
+                            <p class="text-muted small mb-0">
+                                เพิ่มผลงานหรือกิจกรรมลงใน Portfolio ของคุณ
+                            </p>
+                        </div>
+                        <button type="button" class="btn rounded-pill px-3" id="btn-import-item">
+                            <i class="bi bi-upload"></i>
+                            Import Item
+                        </button>
                     </div>
 
                     <form id="item-form" novalidate>
@@ -376,83 +379,45 @@
 
             </section>
         </div>
-        <!-- === ส่วน Import Portfolio Item (Issue #25) === -->
-        <section id="import-section" class="card shadow-sm p-4 mb-4"
-            style="border-radius: 12px; border-color: #f3c6d3;">
-            <h4 class="mb-3" style="color: #6c5ce7; font-weight: 600;">
-                <i class="bi bi-file-earmark-arrow-down"></i> Import Portfolio Item via File or Textarea
-            </h4>
-
-            <!-- 1. Dropdown เลือก Portfolio ปลายทาง & ปุ่มดาวน์โหลดตัวอย่าง -->
-            <div class="row g-3 mb-3 align-items-center">
-                <div class="col-md-7">
-                    <label for="import-target-port" class="form-label fw-bold">เลือก Portfolio ปลายทาง:</label>
-                    <select id="import-target-port" class="form-select">
-                        <option value="">-- กรุณาเลือก Portfolio --</option>
-                    </select>
+        <!-- Import Portfolio Item Modal -->
+        <div class="modal fade" id="import-modal" tabindex="-1" aria-labelledby="import-modal-title" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+                <div class="modal-content import-modal-content">
+                    <div class="modal-header border-0 pb-2">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="import-modal-icon"><i class="bi bi-cloud-arrow-up-fill"></i></div>
+                            <div><h2 class="modal-title fw-bold" id="import-modal-title">Import Portfolio</h2><p class="text-muted mb-0">นำผลงานเข้าสู่ Portfolio ของคุณได้อย่างรวดเร็ว</p></div>
+                        </div>
+                        <button type="button" class="btn-close align-self-start" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-3">
+                        <div class="mb-4">
+                            <label for="import-target-port" class="form-label fw-bold">Portfolio ปลายทาง</label>
+                            <select id="import-target-port" class="form-select"><option value="">กำลังโหลด Portfolio...</option></select>
+                            <small class="text-muted">ระบบเลือก Portfolio ที่กำลังเปิดอยู่ให้อัตโนมัติ สามารถเปลี่ยนปลายทางได้</small>
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6"><button type="button" class="import-method-card active w-100" id="btn-paste-mode"><i class="bi bi-file-earmark-code"></i><span><strong>Paste JSON</strong><small>วางข้อมูล JSON ของผลงาน</small></span><i class="bi bi-check-circle-fill method-check"></i></button></div>
+                            <div class="col-md-6"><button type="button" class="import-method-card w-100" id="btn-upload-mode"><i class="bi bi-file-earmark-arrow-up"></i><span><strong>Upload File</strong><small>เลือกไฟล์ .json จากเครื่อง</small></span><i class="bi bi-check-circle-fill method-check"></i></button></div>
+                        </div>
+                        <div id="import-upload-panel" class="d-none mb-3">
+                            <label class="form-label fw-bold" for="import-file-input">เลือกไฟล์ JSON</label>
+                            <div id="import-drop-zone" class="import-drop-zone text-center"><i class="bi bi-cloud-arrow-up fs-1"></i><p class="mb-2">เลือกไฟล์ .json จากเครื่อง หรือลากไฟล์มาวางที่นี่</p><input type="file" id="import-file-input" accept=".json,application/json" class="form-control"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2 flex-wrap">
+                            <label for="import-textarea" class="form-label fw-bold mb-0">JSON Data <span class="text-danger">*</span></label>
+                            <button type="button" id="btn-download-sample" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-download"></i> ตัวอย่าง JSON</button>
+                        </div>
+                        <textarea id="import-textarea" class="form-control font-monospace import-json-editor" rows="7" placeholder="วางข้อมูล JSON ของผลงานที่นี่..."></textarea>
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2"><small class="text-muted"><i class="bi bi-info-circle"></i> รองรับไฟล์ .json หรือวางข้อมูล JSON ได้โดยตรง</small><span class="badge rounded-pill text-bg-success">ตรวจสอบก่อน Import</span></div>
+                        <div id="import-error-alert" class="alert alert-danger d-none py-2 px-3 mt-3 mb-3" role="alert"></div>
+                        <div id="import-preview-box" class="card bg-light border-0 p-3 my-3 d-none"><h6 class="fw-bold mb-2">ตัวอย่างข้อมูลที่จะนำเข้า (Preview)</h6><p class="mb-1 small"><strong>รหัสผลงาน:</strong> <span id="prev-id"></span></p><p class="mb-1 small"><strong>ชื่อผลงาน:</strong> <span id="prev-title"></span></p><p class="mb-1 small"><strong>ประเภท:</strong> <span id="prev-type"></span></p><p class="mb-0 small"><strong>ทักษะ:</strong> <span id="prev-skills"></span></p></div>
+                        <div id="import-status-box" class="alert d-none py-2 px-3 mt-3 mb-0" role="alert"><span id="import-status-text"></span><button type="button" id="btn-retry-import" class="btn btn-sm btn-warning ms-2 py-0 d-none">ลองใหม่</button></div>
+                    </div>
+                    <div class="modal-footer border-0 pt-2"><button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">ยกเลิก</button><button type="button" id="btn-preview-json" class="btn btn-outline-primary rounded-pill px-4"><i class="bi bi-eye"></i> Validate &amp; Preview</button><button type="button" id="btn-confirm-import" class="btn btn-accent rounded-pill px-4" disabled><i class="bi bi-check-lg"></i> Import</button></div>
                 </div>
-                <div class="col-md-5 text-md-end mt-4">
-                    <button type="button" id="btn-download-sample" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-download"></i> ดาวน์โหลดตัวอย่าง (sample-portfolio-1.json)
-                    </button>
-                </div>
             </div>
-
-            <!-- 2. ปุ่มเลือกไฟล์ .json (และ Drag & Drop) -->
-            <div class="mb-3">
-                <label class="form-label fw-bold">อัปโหลดไฟล์ JSON:</label>
-                <div id="import-drop-zone" class="border border-2 border-dashed rounded p-3 text-center bg-light"
-                    style="cursor: pointer;">
-                    <p class="mb-1 text-muted">ลากและวางไฟล์ <strong>.json</strong> มาที่นี่
-                        หรือคลิกเพื่อเลือกไฟล์จากเครื่อง</p>
-                    <input type="file" id="import-file-input" accept=".json,application/json"
-                        class="form-control form-control-sm w-50 mx-auto" />
-                </div>
-            </div>
-
-            <!-- 3. Textarea สำหรับวางหรือแก้ไข JSON -->
-            <div class="mb-3">
-                <label for="import-textarea" class="form-label fw-bold">ข้อมูล JSON (วางข้อความหรือตรวจสอบก่อน
-                    Import):</label>
-                <textarea id="import-textarea" class="form-control font-monospace text-muted" rows="6"
-                    placeholder="วางโค้ด JSON ของ Item ที่นี่..."></textarea>
-            </div>
-
-            <!-- กล่องแสดง Error แบบละเอียด (ระบุฟิลด์ที่ผิด) -->
-            <div id="import-error-alert" class="alert alert-danger d-none py-2 px-3 mb-3" role="alert"
-                style="font-size: 0.9rem;"></div>
-
-            <!-- กล่อง Preview ก่อนบันทึก (ใช้ textContent เท่านั้นเพื่อความปลอดภัย XSS) -->
-            <div id="import-preview-box" class="card bg-light border-0 p-3 mb-3 d-none"
-                style="border-left: 4px solid #0984e3 !important;">
-                <h6 class="text-primary fw-bold mb-2">ตัวอย่างข้อมูลที่จะนำเข้า (Preview)</h6>
-                <p class="mb-1" style="font-size: 0.9rem;"><strong>รหัสผลงาน (id):</strong> <span id="prev-id"></span>
-                </p>
-                <p class="mb-1" style="font-size: 0.9rem;"><strong>ชื่อผลงาน (title):</strong> <span
-                        id="prev-title"></span></p>
-                <p class="mb-1" style="font-size: 0.9rem;"><strong>ประเภท (type):</strong> <span id="prev-type"></span>
-                </p>
-                <p class="mb-0" style="font-size: 0.9rem;"><strong>ทักษะ (skills):</strong> <span
-                        id="prev-skills"></span></p>
-            </div>
-
-            <!-- สถานะการบันทึก (กำลังบันทึก / สำเร็จ / ล้มเหลว + ปุ่มลองใหม่) -->
-            <div id="import-status-box" class="alert d-none py-2 px-3 mb-3" role="alert" style="font-size: 0.9rem;">
-                <span id="import-status-text"></span>
-                <button type="button" id="btn-retry-import"
-                    class="btn btn-sm btn-warning ms-2 py-0 d-none">ลองใหม่</button>
-            </div>
-
-            <!-- ปุ่มควบคุมการทำงาน: Preview และ Import -->
-            <div class="d-flex gap-2">
-                <button type="button" id="btn-preview-json" class="btn btn-info text-white btn-sm px-3">
-                    <i class="bi bi-eye"></i> ตรวจสอบ & Preview
-                </button>
-                <button type="button" id="btn-confirm-import" class="btn btn-success btn-sm px-3" disabled>
-                    <i class="bi bi-check-circle"></i> ยืนยัน Import
-                </button>
-            </div>
-        </section>
+        </div>
         <!-- === ส่วน Export My Portfolio & Submission Helper (Issue #26) === -->
         <section id="export-section" class="card shadow-sm p-4 mb-4"
             style="border-radius: 12px; border-color: #b8e994;">

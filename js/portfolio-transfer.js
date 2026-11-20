@@ -233,6 +233,9 @@
     const copyButton = $("btn-copy-json");
 
     const exportAlert = $("export-status-alert");
+    const activePortfolioSelect = $("portfolio-select");
+    const importModalEl = $("import-modal");
+    const importModal = importModalEl && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(importModalEl) : null;
 
     if (!targetSelect || !exportSelect) return;
 
@@ -246,10 +249,52 @@
 
       fillSelect(targetSelect, portfolios);
       fillSelect(exportSelect, portfolios);
+      syncImportTarget();
 
     } catch (e) {
       show(error, `โหลดรายชื่อ Portfolio ไม่สำเร็จ: ${e.message}`);
     }
+
+    // ---------- ใช้ Portfolio ที่เปิดอยู่เป็นค่าเริ่มต้น ----------
+    function syncImportTarget() {
+      if (!targetSelect) return;
+
+      // ใช้รายการล่าสุดจาก Dropdown หลัก เพื่อให้ Portfolio ที่เพิ่งสร้างแสดงใน Modal ด้วย
+      if (activePortfolioSelect?.options.length > 1) {
+        const activeOptions = Array.from(activePortfolioSelect.options).filter(option => option.value);
+        targetSelect.innerHTML = "";
+        activeOptions.forEach(source => {
+          const option = document.createElement("option");
+          option.value = source.value;
+          option.textContent = source.textContent;
+          targetSelect.appendChild(option);
+        });
+      }
+
+      const activeId = activePortfolioSelect?.value || localStorage.getItem("currentPortfolioId") || "";
+      if (activeId && Array.from(targetSelect.options).some(option => option.value === activeId)) {
+        targetSelect.value = activeId;
+      } else if (targetSelect.options.length) {
+        targetSelect.selectedIndex = 0;
+      }
+    }
+
+    activePortfolioSelect?.addEventListener("change", syncImportTarget);
+    importModalEl?.addEventListener("show.bs.modal", syncImportTarget);
+    $("btn-import-item")?.addEventListener("click", () => {
+      syncImportTarget();
+      importModal?.show();
+    });
+
+    // ---------- เปลี่ยนวิธีนำเข้าระหว่าง Paste และ Upload ----------
+    function setImportMode(mode) {
+      const uploadMode = mode === "upload";
+      $("btn-paste-mode")?.classList.toggle("active", !uploadMode);
+      $("btn-upload-mode")?.classList.toggle("active", uploadMode);
+      $("import-upload-panel")?.classList.toggle("d-none", !uploadMode);
+    }
+    $("btn-paste-mode")?.addEventListener("click", () => setImportMode("paste"));
+    $("btn-upload-mode")?.addEventListener("click", () => setImportMode("upload"));
 
     // ---------- รีเซ็ต Preview ----------
     function resetPreview() {
@@ -428,6 +473,12 @@
 
         importButton.disabled = false;
       }
+    });
+
+    importModalEl?.addEventListener("hidden.bs.modal", () => {
+      resetPreview();
+      error?.classList.add("d-none");
+      status?.classList.add("d-none");
     });
 
     // ---------- เตรียมข้อมูล Export ----------
