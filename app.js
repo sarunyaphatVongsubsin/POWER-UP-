@@ -290,6 +290,90 @@ function splitList(text) {
   return text.split(/[,\n]/).map(value => value.trim()).filter(Boolean);
 }
 
+// สร้างหน้าต่างแก้ไขข้อมูลแบบใช้ร่วมกัน โดยคืนค่า null เมื่อยกเลิก
+function openEditModal(title, fields, initialValues) {
+  return new Promise(resolve => {
+    const overlay = document.createElement("div");
+    overlay.className = "edit-modal-overlay";
+    const box = document.createElement("div");
+    box.className = "edit-modal-box";
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-modal", "true");
+
+    const heading = document.createElement("h3");
+    heading.textContent = title;
+    const form = document.createElement("form");
+    form.noValidate = true;
+    const grid = document.createElement("div");
+    grid.className = "row g-3";
+
+    fields.forEach(field => {
+      const column = document.createElement("div");
+      column.className = field.wide ? "col-12" : "col-md-6";
+      const label = document.createElement("label");
+      label.className = "form-label fw-semibold";
+      label.textContent = field.label;
+      label.htmlFor = `edit-${field.id}`;
+      const input = document.createElement(field.type === "textarea" ? "textarea" : "input");
+      input.id = `edit-${field.id}`;
+      input.name = field.id;
+      input.className = "form-control";
+      if (field.type === "textarea") input.rows = field.rows || 3;
+      else input.type = field.type || "text";
+      input.required = Boolean(field.required);
+      input.value = initialValues[field.id] ?? "";
+      column.append(label, input);
+      grid.appendChild(column);
+    });
+
+    const actions = document.createElement("div");
+    actions.className = "edit-modal-actions";
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "btn btn-outline-secondary";
+    cancel.textContent = "Cancel";
+    const save = document.createElement("button");
+    save.type = "submit";
+    save.className = "btn btn-accent";
+    save.textContent = "Save Changes";
+    actions.append(cancel, save);
+    form.append(grid, actions);
+    box.append(heading, form);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    function close(value) {
+      document.removeEventListener("keydown", onKeydown);
+      overlay.remove();
+      resolve(value);
+    }
+    function onKeydown(event) {
+      if (event.key === "Escape") close(null);
+    }
+    cancel.addEventListener("click", () => close(null));
+    overlay.addEventListener("click", event => {
+      if (event.target === overlay) close(null);
+    });
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const values = {};
+      let valid = true;
+      fields.forEach(field => {
+        const input = form.elements[field.id];
+        values[field.id] = input.value.trim();
+        if (field.required && !values[field.id]) {
+          input.classList.add("is-invalid");
+          valid = false;
+        } else input.classList.remove("is-invalid");
+      });
+      if (valid) close(values);
+    });
+    document.addEventListener("keydown", onKeydown);
+    form.querySelector("input, textarea")?.focus();
+  });
+}
+
+
 // ---------- MAIN APP ----------
 
 // เริ่มแอป โหลดข้อมูล ผูก Event และแสดงหน้าเว็บ
@@ -447,13 +531,111 @@ async function initializeApp() {
       deleteButton.className = "btn-delete-item";
       deleteButton.textContent = "🗑 ลบ Item";
       deleteButton.addEventListener("click", () => deleteItem(item.id));
-      footer.appendChild(deleteButton);
+      const editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.className = "btn btn-edit-item btn-sm";
+      editButton.innerHTML = '<i class="bi bi-pencil"></i> Edit';
+      editButton.addEventListener("click", () => editPortfolioItem(item.id));
+      footer.append(editButton, deleteButton);
 
       card.append(top, title, role, description, skills,
         reflectionEl, evidenceLabel, evidenceList, footer);
       itemsListEl.appendChild(card);
     });
   }
+
+  // แก้ไขข้อมูล Profile ของ Portfolio ที่เลือก โดยอัปเดต record เดิมบน Server
+  async function editCurrentProfile() {
+    const target = getCurrentPortfolio();
+    if (!target) return;
+    const values = await openEditModal("Edit Profile", [
+      { id: "name", label: "Display Name", required: true, wide: true },
+      { id: "whatIEnjoy", label: "What I Enjoy", type: "textarea", required: true },
+      { id: "whatIveTried", label: "What I've Tried", type: "textarea", required: true },
+      { id: "whatImCuriousAbout", label: "What I'm Curious About", type: "textarea", required: true }
+    ], target);
+    if (!values) return;
+
+    const formData = new FormData();
+    formData.append("portfolioId", target.portfolioId);
+    Object.entries(values).forEach(([key, value]) => formData.append(key, value));
+    try {
+      const updated = await callPortfolioApi("api/update-portfolio.php", { method: "POST", body: formData });
+      Object.assign(target, updated);
+      renderAll();
+      showStatus("อัปเดต Profile เรียบร้อยแล้ว!");
+    } catch (error) {
+      showStatus(error.message, "danger");
+    }
+  }
+
+  // แก้ไข Item ด้วย ID เดิม จึงไม่สร้างรายการซ้ำ
+  async function editPortfolioItem(itemId) {
+    const target = getCurrentPortfolio();
+    const item = target?.items?.find(entry => entry.id === itemId);
+    if (!target || !item) return;
+    const reflection = item.reflection || {};
+    const values = await openEditModal("Edit Portfolio Item", [
+      { id: "title", label: "Title", required: true, wide: true },
+      { id: "type", label: "Type", required: true },
+      { id: "date", label: "Date", type: "date", required: true },
+      { id: "role", label: "Role", required: true, wide: true },
+      { id: "skills", label: "Skills (คั่นด้วย comma)", required: true, wide: true },
+      { id: "description", label: "Description", type: "textarea", required: true, wide: true },
+      { id: "whatIDid", label: "What I did", type: "textarea", required: true },
+      { id: "whatILearned", label: "What I learned", type: "textarea", required: true },
+      { id: "challenge", label: "Challenge", type: "textarea", required: true },
+      { id: "nextStep", label: "Next step", type: "textarea", required: true },
+      { id: "evidence", label: "Evidence (หนึ่ง URL ต่อบรรทัด)", type: "textarea", required: true, wide: true }
+    ], {
+      title: item.title, type: item.type, date: item.date, role: item.role,
+      skills: (item.skills || []).join(", "), description: item.description,
+      whatIDid: reflection.whatIDid, whatILearned: reflection.whatILearned,
+      challenge: reflection.challenge, nextStep: reflection.nextStep,
+      evidence: (item.evidence || []).join("\\n")
+    });
+    if (!values) return;
+
+    const updatedItem = {
+      ...item,
+      title: values.title, type: values.type, date: values.date, role: values.role,
+      skills: splitList(values.skills),
+      description: values.description,
+      reflection: {
+        whatIDid: values.whatIDid, whatILearned: values.whatILearned,
+        challenge: values.challenge, nextStep: values.nextStep
+      },
+      evidence: values.evidence.split(/[\\r\\n]+/).map(value => value.trim()).filter(Boolean)
+    };
+    const errors = validatePortfolioItemData(updatedItem);
+    if (errors.length) return showStatus(errors[0], "danger");
+
+    const formData = new FormData();
+    formData.append("portfolioId", target.portfolioId);
+    formData.append("itemId", item.id);
+    formData.append("title", updatedItem.title);
+    formData.append("type", updatedItem.type);
+    formData.append("date", updatedItem.date);
+    formData.append("role", updatedItem.role);
+    formData.append("description", updatedItem.description);
+    formData.append("skills", updatedItem.skills.join(","));
+    formData.append("whatIDid", updatedItem.reflection.whatIDid);
+    formData.append("whatILearned", updatedItem.reflection.whatILearned);
+    formData.append("challenge", updatedItem.reflection.challenge);
+    formData.append("nextStep", updatedItem.reflection.nextStep);
+    formData.append("evidence", updatedItem.evidence.join("\\n"));
+    try {
+      const saved = await callPortfolioApi("api/update-item.php", { method: "POST", body: formData });
+      const index = target.items.findIndex(entry => entry.id === item.id);
+      if (index !== -1) target.items[index] = createPortfolioItem(saved);
+      renderPortfolioView(target);
+      showStatus("อัปเดต Portfolio Item เรียบร้อยแล้ว!");
+    } catch (error) {
+      showStatus(error.message, "danger");
+    }
+  }
+
+  $("btn-edit-profile")?.addEventListener("click", editCurrentProfile);
 
   // ลบ Item หลังยืนยัน แล้วบันทึกและแสดงข้อมูลใหม่
   async function deleteItem(itemId) {
@@ -512,8 +694,10 @@ async function initializeApp() {
     const current = getCurrentPortfolio() || portfolios[0] || null;
     const profileNameEl = $("profile-name");
     const deletePortfolioButton = $("btn-delete-portfolio");
+    const editProfileButton = $("btn-edit-profile");
     if (profileNameEl) profileNameEl.textContent = current ? current.name : "เลือก Portfolio";
     if (deletePortfolioButton) deletePortfolioButton.disabled = !current;
+    if (editProfileButton) editProfileButton.disabled = !current;
     if (current) {
       portfolioSelectEl.value = current.portfolioId;
       localStorage.setItem(CURRENT_ID_KEY, current.portfolioId);
