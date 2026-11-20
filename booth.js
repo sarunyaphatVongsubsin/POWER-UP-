@@ -1,13 +1,14 @@
 "use strict";
 
-const CHALLENGES = [
-  // เพิ่ม Challenge ที่นี่
-];
+const CHALLENGES =
+  typeof window !== "undefined" && Array.isArray(window.CHALLENGES) && window.CHALLENGES.length
+    ? window.CHALLENGES
+    : typeof window !== "undefined" && window.CHALLENGE_CONFIG
+      ? [window.CHALLENGE_CONFIG]
+      : [];
 
-// ---------- Helpers ----------
 const $ = id => document.getElementById(id);
 
-// สร้าง element พร้อมข้อความ (ใช้ textContent เพื่อความปลอดภัย)
 function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -17,7 +18,7 @@ function el(tag, className, text) {
 
 function makeList(tag, items) {
   const list = el(tag);
-  items.forEach(text => list.appendChild(el("li", "", text)));
+  (Array.isArray(items) ? items : []).forEach(text => list.appendChild(el("li", "", text)));
   return list;
 }
 
@@ -27,7 +28,6 @@ function makeBlock(title, content) {
   return block;
 }
 
-// แจ้งเตือนแบบ Toast (ใช้ .toast-area / .toast-msg จาก style.css)
 function showStatus(message, kind = "success") {
   const area = $("toast-area");
   if (!area) return;
@@ -40,14 +40,12 @@ function showStatus(message, kind = "success") {
   }, 3000);
 }
 
-// วันที่ปัจจุบันตามเวลาเครื่อง รูปแบบ YYYY-MM-DD
 function todayString() {
   const now = new Date();
   const pad = n => String(n).padStart(2, "0");
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
-// สร้าง id ใหม่ทุกครั้ง (เวลา + ตัวเลขสุ่ม) และไม่ซ้ำกับครั้งก่อนหน้า
 let lastGeneratedId = "";
 function generateItemId() {
   let id;
@@ -59,27 +57,46 @@ function generateItemId() {
   return id;
 }
 
-// ---------- สร้าง Portfolio Item ตาม schema ของ app.js ----------
 function buildPortfolioItem(challenge, playerName, note) {
-  return {
+  const itemConfig = challenge.item || {};
+  const reflectionConfig = challenge.defaultReflection || {};
+  const skills = Array.isArray(itemConfig.skills)
+    ? [...itemConfig.skills]
+    : Array.isArray(challenge.skills)
+      ? [...challenge.skills]
+      : [];
+  const evidence = Array.isArray(itemConfig.evidence)
+    ? [...itemConfig.evidence]
+    : challenge.defaultEvidenceUrl
+      ? [challenge.defaultEvidenceUrl]
+      : [];
+  const item = {
     id: generateItemId(),
-    title: challenge.title,
-    type: challenge.item.type,
+    title: challenge.title || "",
+    type: itemConfig.type || "Challenge",
     date: todayString(),
-    role: playerName ? `Booth Participant: ${playerName}` : "Booth Participant",
-    description: challenge.description,
-    skills: [...challenge.item.skills],
+    role: playerName
+      ? `${challenge.role || "Booth Participant"}: ${playerName}`
+      : challenge.role || "Booth Participant",
+    description: challenge.description || "",
+    skills,
     reflection: {
-      whatIDid: note,
-      whatILearned: challenge.item.learned,
-      challenge: challenge.item.difficulty,
-      nextStep: challenge.item.nextStep
+      whatIDid: note || reflectionConfig.whatIDid || "",
+      whatILearned: itemConfig.learned || reflectionConfig.whatILearned || "",
+      challenge: itemConfig.difficulty || reflectionConfig.challenge || "",
+      nextStep: itemConfig.nextStep || reflectionConfig.nextStep || ""
     },
-    evidence: []
+    evidence
   };
+  if (challenge.challengeId) item.challengeId = challenge.challengeId;
+  if (challenge.hostGroup) item.hostGroup = challenge.hostGroup;
+  if (challenge.category) item.category = challenge.category;
+  if (challenge.challengeId || challenge.hostGroup || challenge.category) {
+    item.schemaVersion = "1.0";
+  }
+  return item;
 }
 
-// ตรวจรูปแบบพื้นฐานให้ตรงกับ validatePortfolioItemData ใน app.js
 function checkItem(item) {
   const errors = [];
   ["id", "title", "type", "date", "role", "description"].forEach(key => {
@@ -94,42 +111,53 @@ function checkItem(item) {
   return errors;
 }
 
-// ---------- แสดง Challenge ----------
 function renderChallenges() {
   const list = $("challenge-list");
   const select = $("host-challenge");
   $("challenge-count").textContent = CHALLENGES.length;
 
   CHALLENGES.forEach(challenge => {
+    const challengeId = challenge.id || challenge.challengeId || "";
     const option = el("option", "", challenge.title);
-    option.value = challenge.id;
+    option.value = challengeId;
     select.appendChild(option);
 
     const card = el("article", "challenge-card");
-    card.id = `card-${challenge.id}`;
+    card.id = `card-${challengeId}`;
+    if (challenge.duration) {
+      card.append(el("span", "challenge-time", `⏱ ${challenge.duration}`));
+    } else if (challenge.hostGroup) {
+      card.append(el("span", "challenge-time", challenge.hostGroup));
+    }
     card.append(
-      el("span", "challenge-time", `⏱ ${challenge.duration}`),
       el("h3", "", challenge.title),
       el("p", "mb-0", challenge.description)
     );
 
     const body = el("div", "challenge-body");
-    body.append(
-      makeBlock("ขั้นตอน", makeList("ol", challenge.steps)),
-      makeBlock("เกณฑ์ผ่าน", makeList("ul", challenge.criteria)),
-      makeBlock("วัสดุที่ใช้", makeList("ul", challenge.materials))
-    );
-    card.appendChild(body);
+    if (Array.isArray(challenge.steps) && challenge.steps.length) {
+      body.append(makeBlock("ขั้นตอน", makeList("ol", challenge.steps)));
+    }
+    if (Array.isArray(challenge.criteria) && challenge.criteria.length) {
+      body.append(makeBlock("เกณฑ์ผ่าน", makeList("ul", challenge.criteria)));
+    }
+    if (Array.isArray(challenge.materials) && challenge.materials.length) {
+      body.append(makeBlock("วัสดุที่ใช้", makeList("ul", challenge.materials)));
+    }
+    if (!body.children.length && Array.isArray(challenge.skills) && challenge.skills.length) {
+      body.append(makeBlock("ทักษะที่ได้", makeList("ul", challenge.skills)));
+    }
+    if (body.children.length) {
+      card.appendChild(body);
+    }
 
     if (challenge.mode === "webapp" && challenge.webAppUrl) {
-      // Challenge แบบ Web App: ฝังกิจกรรมในหน้านี้
       const frame = el("iframe", "webapp-frame");
       frame.src = challenge.webAppUrl;
       frame.title = `Web App: ${challenge.title}`;
       frame.loading = "lazy";
       card.appendChild(frame);
-    } else {
-      // Challenge แบบ onsite: แสดงคำแนะนำสำหรับ Host
+    } else if (challenge.hostGuide) {
       const guide = el("div", "host-note");
       guide.append(el("strong", "", "คำแนะนำสำหรับ Host (onsite)"), el("span", "", challenge.hostGuide));
       card.appendChild(guide);
@@ -138,7 +166,7 @@ function renderChallenges() {
     const pick = el("button", "btn btn-outline-secondary btn-sm rounded-pill px-3 mt-3", "ใช้ใน Host Tool");
     pick.type = "button";
     pick.addEventListener("click", () => {
-      select.value = challenge.id;
+      select.value = challengeId;
       select.classList.remove("is-invalid");
       $("host-tool-section").scrollIntoView({ behavior: "smooth", block: "start" });
       $("host-player").focus({ preventScroll: true });
@@ -149,7 +177,6 @@ function renderChallenges() {
   });
 }
 
-// ---------- Host Tool ----------
 function showFormError(fields) {
   const box = $("host-error");
   box.textContent = `กรอกข้อมูลไม่ครบ กรุณากรอก: ${fields.join(", ")}`;
@@ -169,7 +196,7 @@ function handleGenerate(event) {
   const challengeId = $("host-challenge").value;
   const playerName = $("host-player").value.trim();
   const note = $("host-note").value.trim();
-  const challenge = CHALLENGES.find(c => c.id === challengeId);
+  const challenge = CHALLENGES.find(c => (c.id || c.challengeId) === challengeId);
 
   const missing = [];
   if (!challenge) {
@@ -209,7 +236,6 @@ function setCopyStatus(message, kind = "") {
   status.className = `small fw-semibold ${kind}`.trim();
 }
 
-// คัดลอก JSON; ถ้า clipboard ใช้ไม่ได้ให้เลือกข้อความให้ผู้ใช้คัดลอกเอง
 async function copyJson() {
   const output = $("json-output");
   const text = output.value;
@@ -221,7 +247,6 @@ async function copyJson() {
     showStatus("คัดลอก JSON สำเร็จ!");
     return;
   } catch {
-    // ไปลองวิธีสำรองต่อ
   }
 
   output.focus();
