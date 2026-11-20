@@ -1,29 +1,21 @@
 "use strict";
 
 const CHALLENGE_CONFIG = {
-
+  id: "ch-group06-number-rush",
   challengeId: "ch-group06-number-rush",
-
   hostGroup: "Group 6",
-
   title: "Number Rush",
-
   category: "mix",
-
   role: "Challenger / Number Rush Player",
-
   description:
     "แก้โจทย์คำนวณ Number Rush โดยนำไพ่ตัวเลข 4 ใบ มาคำนวณ (+, −, ×, ÷) ให้ได้ผลลัพธ์เท่ากับแต้มรวมของไพ่เป้าหมาย 2 ใบ ให้ถูกต้องเร็วที่สุด",
-
   skills: [
     "Mental Math",
     "Arithmetic Logic",
     "Problem Solving",
     "Speed Thinking"
   ],
-
   defaultEvidenceUrl: "https://github.com/sarunyaphatVongsubsin/POWER-UP-",
-
   defaultReflection: {
     whatIDid:
       "เล่นเกม Number Rush ประจำบูธกลุ่ม 6 โดยนำเลขจากไพ่ 4 ใบมาคำนวณให้ได้ผลลัพธ์ตรงกับไพ่เป้าหมายทั้งหมด 5 รอบ",
@@ -38,6 +30,7 @@ const CHALLENGE_CONFIG = {
 
 if (typeof window !== "undefined") {
   window.CHALLENGE_CONFIG = CHALLENGE_CONFIG;
+  window.CHALLENGES = [CHALLENGE_CONFIG];
 }
 
 if (typeof module !== "undefined" && module.exports) {
