@@ -115,43 +115,107 @@
 (function (globalScope) {
   "use strict";
 
-  function exportPortfolio(portfolioId) {
-    if (typeof portfolioId !== "string" || !portfolioId.trim()) {
-      return null;
+  function isValidPortfolioObject(entry) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      return false;
     }
 
-    let portfolios;
+    if (typeof entry.name !== "string" || !entry.name.trim()) {
+      return false;
+    }
+
+    if (
+      entry.portfolioId !== undefined &&
+      (typeof entry.portfolioId !== "string" || !entry.portfolioId.trim())
+    ) {
+      return false;
+    }
+
+    if (entry.items !== undefined && !Array.isArray(entry.items)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function findPortfolioById(portfolioId) {
     try {
-      if (typeof localStorage === "undefined") {
-        return null;
+      if (typeof localStorage !== "undefined") {
+        const raw = localStorage.getItem("portfolios");
+        if (raw) {
+          const stored = JSON.parse(raw);
+          if (Array.isArray(stored)) {
+            const match = stored.find(
+              entry =>
+                entry &&
+                typeof entry === "object" &&
+                entry.portfolioId === portfolioId
+            );
+            if (match) {
+              return match;
+            }
+          }
+        }
       }
-      const raw = localStorage.getItem("portfolios");
-      if (!raw) {
-        return null;
-      }
-      portfolios = JSON.parse(raw);
     } catch (error) {
+    }
+
+    const memoryPortfolios =
+      typeof window !== "undefined" && Array.isArray(window.portfolios)
+        ? window.portfolios
+        : globalScope && Array.isArray(globalScope.portfolios)
+          ? globalScope.portfolios
+          : null;
+
+    if (memoryPortfolios) {
+      const match = memoryPortfolios.find(
+        entry =>
+          entry &&
+          typeof entry === "object" &&
+          entry.portfolioId === portfolioId
+      );
+      if (match) {
+        return match;
+      }
+    }
+
+    return null;
+  }
+
+  function exportPortfolio(portfolioOrId) {
+    let portfolio = null;
+
+    if (
+      portfolioOrId &&
+      typeof portfolioOrId === "object" &&
+      !Array.isArray(portfolioOrId)
+    ) {
+      portfolio = portfolioOrId;
+    } else if (typeof portfolioOrId === "string" && portfolioOrId.trim()) {
+      portfolio = findPortfolioById(portfolioOrId.trim());
+    } else {
       return null;
     }
 
-    if (!Array.isArray(portfolios)) {
-      return null;
-    }
-
-    const portfolio = portfolios.find(
-      entry => entry && typeof entry === "object" && entry.portfolioId === portfolioId
-    );
-
-    if (!portfolio) {
+    if (!isValidPortfolioObject(portfolio)) {
       return null;
     }
 
     const exportData = {
-      portfolioId: portfolio.portfolioId,
+      schemaVersion: "1.0",
+      portfolioId:
+        typeof portfolio.portfolioId === "string" ? portfolio.portfolioId : "",
       name: portfolio.name,
-      whatIEnjoy: portfolio.whatIEnjoy,
-      whatIveTried: portfolio.whatIveTried,
-      whatImCuriousAbout: portfolio.whatImCuriousAbout,
+      whatIEnjoy:
+        typeof portfolio.whatIEnjoy === "string" ? portfolio.whatIEnjoy : "",
+      whatIveTried:
+        typeof portfolio.whatIveTried === "string"
+          ? portfolio.whatIveTried
+          : "",
+      whatImCuriousAbout:
+        typeof portfolio.whatImCuriousAbout === "string"
+          ? portfolio.whatImCuriousAbout
+          : "",
       items: Array.isArray(portfolio.items) ? portfolio.items : [],
       exportedAt: new Date().toISOString()
     };

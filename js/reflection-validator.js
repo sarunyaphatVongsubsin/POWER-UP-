@@ -39,6 +39,12 @@
       rawLines = evidenceInput.split(/\r?\n/);
     } else if (Array.isArray(evidenceInput)) {
       rawLines = evidenceInput;
+    } else if (
+      evidenceInput &&
+      typeof evidenceInput === "object" &&
+      Object.prototype.hasOwnProperty.call(evidenceInput, "evidence")
+    ) {
+      return validateEvidenceUrls(evidenceInput.evidence);
     } else {
       errors.push("รูปแบบข้อมูล Evidence ไม่ถูกต้อง (ต้องเป็นข้อความหรือ Array ของ URL)");
       return {
@@ -107,26 +113,48 @@
     "nextStep"
   ];
 
+  function validateReflection(reflectionInput) {
+    const target =
+      reflectionInput &&
+      typeof reflectionInput === "object" &&
+      !Array.isArray(reflectionInput) &&
+      Object.prototype.hasOwnProperty.call(reflectionInput, "reflection")
+        ? reflectionInput.reflection
+        : reflectionInput;
+
+    if (!target || typeof target !== "object" || Array.isArray(target)) {
+      return {
+        isValid: false,
+        missingFields: [...REQUIRED_REFLECTION_FIELDS],
+        errors: ["รูปแบบข้อมูล Reflection ไม่ถูกต้อง (ต้องเป็น Object)"]
+      };
+    }
+
+    const missingFields = [];
+    const errors = [];
+
+    REQUIRED_REFLECTION_FIELDS.forEach(field => {
+      const value = target[field];
+      if (typeof value !== "string" || value.trim().length === 0) {
+        missingFields.push(field);
+        errors.push(`กรุณากรอกข้อมูล reflection.${field}`);
+      }
+    });
+
+    return {
+      isValid: errors.length === 0,
+      missingFields,
+      errors
+    };
+  }
+
   function isItemSubmissionReady(item) {
     if (!item || typeof item !== "object" || Array.isArray(item)) {
       return false;
     }
 
-    const reflection = item.reflection;
-    if (
-      !reflection ||
-      typeof reflection !== "object" ||
-      Array.isArray(reflection)
-    ) {
-      return false;
-    }
-
-    const hasCompleteReflection = REQUIRED_REFLECTION_FIELDS.every(field => {
-      const value = reflection[field];
-      return typeof value === "string" && value.trim().length > 0;
-    });
-
-    if (!hasCompleteReflection) {
+    const reflectionResult = validateReflection(item.reflection);
+    if (!reflectionResult.isValid) {
       return false;
     }
 
@@ -157,10 +185,12 @@
   }
 
   if (globalScope) {
+    globalScope.validateReflection = validateReflection;
     globalScope.isItemSubmissionReady = isItemSubmissionReady;
   }
 
   if (typeof module !== "undefined" && module.exports) {
+    module.exports.validateReflection = validateReflection;
     module.exports.isItemSubmissionReady = isItemSubmissionReady;
   }
 })(
@@ -226,21 +256,39 @@
       return { success: false, message: "Item not found" };
     }
 
-    let portfolios;
-    try {
-      if (typeof localStorage === "undefined") {
-        return { success: false, message: "Item not found" };
+    let portfolios = null;
+    let usingMemoryStore = false;
+
+    if (typeof localStorage !== "undefined") {
+      try {
+        const rawPortfolios = localStorage.getItem(PORTFOLIOS_STORAGE_KEY);
+        if (typeof rawPortfolios === "string" && rawPortfolios.trim()) {
+          const parsed = JSON.parse(rawPortfolios);
+          if (Array.isArray(parsed)) {
+            portfolios = parsed;
+          }
+        }
+      } catch (error) {
+        portfolios = null;
       }
-      const rawPortfolios = localStorage.getItem(PORTFOLIOS_STORAGE_KEY);
-      if (!rawPortfolios) {
-        return { success: false, message: "Item not found" };
-      }
-      portfolios = JSON.parse(rawPortfolios);
-    } catch (error) {
-      return { success: false, message: "Item not found" };
     }
 
-    if (!Array.isArray(portfolios) || portfolios.length === 0) {
+    if (!Array.isArray(portfolios)) {
+      const memoryPortfolios =
+        typeof window !== "undefined" && Array.isArray(window.portfolios)
+          ? window.portfolios
+          : globalScope && Array.isArray(globalScope.portfolios)
+            ? globalScope.portfolios
+            : null;
+      if (memoryPortfolios) {
+        portfolios = memoryPortfolios;
+        usingMemoryStore = true;
+      } else {
+        return { success: false, message: "Storage not available" };
+      }
+    }
+
+    if (portfolios.length === 0) {
       return { success: false, message: "Item not found" };
     }
 
@@ -303,6 +351,11 @@
     }
 
     const snapshotBackup = JSON.stringify(portfolios);
+    const previousReflection = targetItem.reflection;
+    const previousEvidence = Array.isArray(targetItem.evidence)
+      ? [...targetItem.evidence]
+      : targetItem.evidence;
+    const previousUpdatedAt = targetItem.updatedAt;
 
     try {
       targetItem.reflection = extractTrimmedReflection(
@@ -340,11 +393,22 @@
         }
       }
 
-      localStorage.setItem(PORTFOLIOS_STORAGE_KEY, JSON.stringify(portfolios));
+      if (!usingMemoryStore && typeof localStorage !== "undefined") {
+        localStorage.setItem(PORTFOLIOS_STORAGE_KEY, JSON.stringify(portfolios));
+      }
     } catch (error) {
-      try {
-        localStorage.setItem(PORTFOLIOS_STORAGE_KEY, snapshotBackup);
-      } catch (rollbackError) {
+      targetItem.reflection = previousReflection;
+      targetItem.evidence = previousEvidence;
+      if (previousUpdatedAt === undefined) {
+        delete targetItem.updatedAt;
+      } else {
+        targetItem.updatedAt = previousUpdatedAt;
+      }
+      if (!usingMemoryStore && typeof localStorage !== "undefined") {
+        try {
+          localStorage.setItem(PORTFOLIOS_STORAGE_KEY, snapshotBackup);
+        } catch (rollbackError) {
+        }
       }
       return {
         success: false,
