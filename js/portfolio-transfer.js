@@ -81,57 +81,24 @@
     );
   }
 
-  // ---------- ตรวจสอบข้อมูล JSON ----------
-  function validateItem(text) {
+  // ---------- ตรวจสอบ Portfolio Item หนึ่งรายการ ----------
+  function validateSingleItem(item) {
     const errors = [];
 
-    if (typeof text !== "string" || !text.trim()) {
-      return {
-        valid: false,
-        errors: ["กรุณาระบุ JSON"]
-      };
-    }
-
-    if (new Blob([text]).size > 256 * 1024) {
-      return {
-        valid: false,
-        errors: ["JSON ต้องมีขนาดไม่เกิน 256 KB"]
-      };
-    }
-
-    let item;
-
-    try {
-      item = JSON.parse(text);
-    } catch {
-      return {
-        valid: false,
-        errors: ["JSON Syntax ไม่ถูกต้อง"]
-      };
-    }
-
     if (!item || typeof item !== "object" || Array.isArray(item)) {
-      return {
-        valid: false,
-        errors: ["ข้อมูลต้องเป็น Object ของ Portfolio Item"]
-      };
+      return { valid: false, errors: ["ข้อมูลแต่ละรายการต้องเป็น Object"] };
     }
 
-    // ตรวจสอบฟิลด์ที่จำเป็น
     ["id", "title", "type", "date", "role", "description"].forEach(key => {
       if (typeof item[key] !== "string" || !item[key].trim()) {
         errors.push(`${key} จำเป็นต้องมีข้อมูล`);
       }
     });
 
-    // ตรวจสอบวันที่
-    if (typeof item.date === "string") {
-      if (!isValidDate(item.date.trim())) {
-        errors.push("date ต้องเป็นวันที่จริงรูปแบบ YYYY-MM-DD");
-      }
+    if (typeof item.date === "string" && !isValidDate(item.date.trim())) {
+      errors.push("date ต้องเป็นวันที่จริงรูปแบบ YYYY-MM-DD");
     }
 
-    // ตรวจสอบ Skills
     if (
       !Array.isArray(item.skills) ||
       item.skills.length > 20 ||
@@ -140,7 +107,6 @@
       errors.push("skills ต้องเป็น Array ของข้อความ (ไม่เกิน 20 รายการ)");
     }
 
-    // ตรวจสอบ Reflection
     if (
       !item.reflection ||
       typeof item.reflection !== "object" ||
@@ -155,7 +121,6 @@
       });
     }
 
-    // ตรวจสอบ Evidence
     if (!Array.isArray(item.evidence) || item.evidence.length > 10) {
       errors.push("evidence ต้องเป็น Array (ไม่เกิน 10 รายการ)");
     } else {
@@ -164,13 +129,10 @@
           errors.push(`evidence[${i}] ต้องเป็นข้อความ`);
           return;
         }
-
         if (!url.trim()) return;
-
         try {
-          const u = new URL(url);
-
-          if (!["http:", "https:"].includes(u.protocol) || !u.hostname) {
+          const parsed = new URL(url);
+          if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname) {
             throw new Error();
           }
         } catch {
@@ -179,40 +141,94 @@
       });
     }
 
-    // ตรวจสอบ Schema Version
-    if (
-      item.schemaVersion !== undefined &&
-      item.schemaVersion !== "1.0"
-    ) {
+    if (item.schemaVersion !== undefined && item.schemaVersion !== "1.0") {
       errors.push('schemaVersion หากระบุต้องเป็น "1.0"');
     }
-
-    // ตรวจสอบ Category
     if (
       item.category !== undefined &&
       !["discover", "mix", "levelup"].includes(item.category)
     ) {
       errors.push("category ไม่ถูกต้อง");
     }
-
-    // ตรวจสอบ Challenge ID และ Host Group
-    ["challengeId", "hostGroup"].forEach(k => {
+    ["challengeId", "hostGroup"].forEach(key => {
       if (
-        item[k] !== undefined &&
-        (
-          typeof item[k] !== "string" ||
-          !item[k].trim() ||
-          item[k].length > 100
-        )
+        item[key] !== undefined &&
+        (typeof item[key] !== "string" || !item[key].trim() || item[key].length > 100)
       ) {
-        errors.push(`${k} ไม่ถูกต้อง`);
+        errors.push(`${key} ไม่ถูกต้อง`);
       }
     });
 
+    return { valid: errors.length === 0, errors, data: item };
+  }
+
+  // ---------- รองรับ Single Item, Array และ Full Portfolio ----------
+  function validateItem(text) {
+    if (typeof text !== "string" || !text.trim()) {
+      return { valid: false, errors: ["กรุณาระบุ JSON"] };
+    }
+    if (new Blob([text]).size > 256 * 1024) {
+      return { valid: false, errors: ["JSON ต้องมีขนาดไม่เกิน 256 KB"] };
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return { valid: false, errors: ["JSON Syntax ไม่ถูกต้อง"] };
+    }
+
+    let candidates;
+    if (Array.isArray(parsed)) {
+      candidates = parsed;
+    } else if (parsed && typeof parsed === "object" && Array.isArray(parsed.items)) {
+      // Full Portfolio: ใช้เฉพาะ items และละเว้นข้อมูลระดับ Portfolio
+      candidates = parsed.items;
+    } else if (parsed && typeof parsed === "object" && parsed.id !== undefined) {
+      candidates = [parsed];
+    } else {
+      return {
+        valid: false,
+        errors: ["ไม่พบ Item: JSON ต้องเป็น Item, Array ของ Item หรือ Portfolio ที่มี items"]
+      };
+    }
+
+    if (!candidates.length) {
+      return { valid: false, errors: ["ไม่พบ Portfolio Item ในข้อมูลที่เลือก"] };
+    }
+    if (candidates.length > 100) {
+      return { valid: false, errors: ["Import ได้สูงสุด 100 Items ต่อครั้ง"] };
+    }
+
+    const validItems = [];
+    const errors = [];
+    const seenIds = new Set();
+
+    candidates.forEach((item, index) => {
+      const result = validateSingleItem(item);
+      if (!result.valid) {
+        errors.push(`Item ลำดับที่ ${index + 1}: ${result.errors.join(", ")}`);
+        return;
+      }
+
+      const id = result.data.id.trim();
+      if (seenIds.has(id)) {
+        errors.push(`Item ลำดับที่ ${index + 1}: ID "${id}" ซ้ำภายในไฟล์`);
+        return;
+      }
+      seenIds.add(id);
+      validItems.push({ ...result.data, id });
+    });
+
+    if (errors.length) {
+      return { valid: false, errors };
+    }
+
     return {
-      valid: errors.length === 0,
-      errors,
-      data: item
+      valid: true,
+      errors: [],
+      data: validItems,
+      count: validItems.length
     };
   }
 
@@ -267,7 +283,7 @@
     if (!targetSelect || !exportSelect) return;
 
     let portfolios = [];
-    let verifiedItem = null;
+    let verifiedItems = [];
     let exportPayload = "";
     let isImporting = false;
 
@@ -326,7 +342,7 @@
 
     // ---------- รีเซ็ต Preview ----------
     function resetPreview() {
-      verifiedItem = null;
+      verifiedItems = [];
 
       importButton.disabled = true;
       preview.classList.add("d-none");
@@ -448,20 +464,32 @@
       }
 
       const destination = portfolios.find(p => p.portfolioId === targetSelect.value);
-      const duplicate = destination?.items?.some(item => item.id === result.data.id);
-      if (duplicate) {
-        show(error, `Item ID "${result.data.id}" มีอยู่ใน Portfolio นี้แล้ว`);
+      const existingIds = new Set((destination?.items || []).map(item => item.id));
+      const duplicates = result.data.filter(item => existingIds.has(item.id));
+      if (duplicates.length) {
+        show(error, `พบ Item ID ซ้ำใน Portfolio ปลายทาง: ${duplicates.map(item => item.id).join(", ")}`);
         resetPreview();
         return;
       }
 
-      verifiedItem = result.data;
+      verifiedItems = result.data;
 
-      $("prev-id").textContent = verifiedItem.id;
-      $("prev-title").textContent = verifiedItem.title;
-      $("prev-type").textContent = verifiedItem.type;
-      $("prev-date").textContent = verifiedItem.date;
-      $("prev-skills").textContent = verifiedItem.skills.join(", ");
+      const first = verifiedItems[0];
+      $("prev-id").textContent = verifiedItems.length === 1
+        ? first.id
+        : `${verifiedItems.length} รายการ`;
+      $("prev-title").textContent = verifiedItems.length === 1
+        ? first.title
+        : `${first.title} และอีก ${verifiedItems.length - 1} รายการ`;
+      $("prev-type").textContent = verifiedItems.length === 1
+        ? first.type
+        : "Multiple Items";
+      $("prev-date").textContent = verifiedItems.length === 1
+        ? first.date
+        : "หลายวันที่";
+      $("prev-skills").textContent = verifiedItems.length === 1
+        ? first.skills.join(", ")
+        : `รวม ${verifiedItems.length} Items (แสดงตัวอย่างรายการแรก)`;
 
       preview.classList.remove("d-none");
       importButton.disabled = false;
@@ -469,7 +497,7 @@
 
     // ---------- ยืนยัน Import ลง Server (single guarded handler) ----------
     async function performImport() {
-      if (isImporting || !verifiedItem || !targetSelect.value) return;
+      if (isImporting || !verifiedItems.length || !targetSelect.value) return;
 
       isImporting = true;
       importButton.disabled = true;
@@ -488,7 +516,7 @@
           },
           body: JSON.stringify({
             portfolioId: destinationPortfolioId,
-            item: verifiedItem
+            items: verifiedItems
           })
         });
 
@@ -497,11 +525,12 @@
         try {
           const checklistKey = `portfolio_${destinationPortfolioId}_items`;
           const checklistItems = JSON.parse(localStorage.getItem(checklistKey) || "[]");
-          const savedItem = importResult.item || verifiedItem;
-          if (!checklistItems.some(item => item.id === savedItem.id)) {
-            checklistItems.push(savedItem);
-            localStorage.setItem(checklistKey, JSON.stringify(checklistItems));
-          }
+          const savedItems = importResult.items || verifiedItems;
+          const knownIds = new Set(checklistItems.map(item => item.id));
+          savedItems.forEach(item => {
+            if (!knownIds.has(item.id)) checklistItems.push(item);
+          });
+          localStorage.setItem(checklistKey, JSON.stringify(checklistItems));
         } catch (storageError) {
           console.warn("อัปเดตข้อมูล Submission Helper ใน LocalStorage ไม่สำเร็จ:", storageError);
         }
@@ -517,9 +546,9 @@
         }
 
         status.className = "alert alert-success py-2 px-3 mb-3";
-        statusText.textContent = "Import สำเร็จ! เพิ่ม Item ลงใน Portfolio แล้ว";
+        statusText.textContent = `Import สำเร็จ! เพิ่ม ${importResult.importedCount || verifiedItems.length} Items ลงใน Portfolio แล้ว`;
 
-        verifiedItem = null;
+        verifiedItems = [];
         textArea.value = "";
         if (fileInput) fileInput.value = "";
         preview.classList.add("d-none");

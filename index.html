@@ -412,21 +412,21 @@
                             <label for="import-textarea" class="form-label fw-bold mb-0">JSON Data <span class="text-danger">*</span></label>
                             <button type="button" id="btn-download-sample" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-download"></i> ตัวอย่าง JSON</button>
                         </div>
-                        <textarea id="import-textarea" class="form-control font-monospace import-json-editor" rows="7" placeholder="วางข้อมูล JSON ของผลงานที่นี่..."></textarea>
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2"><small class="text-muted"><i class="bi bi-info-circle"></i> รองรับไฟล์ .json หรือวางข้อมูล JSON ได้โดยตรง</small><span class="badge rounded-pill text-bg-success">ตรวจสอบก่อน Import</span></div>
+                        <textarea id="import-textarea" class="form-control font-monospace import-json-editor" rows="7" placeholder="วาง JSON ของ Item, Array ของหลาย Item หรือ Full Portfolio ได้ที่นี่..."></textarea>
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2"><small class="text-muted"><i class="bi bi-info-circle"></i> รองรับ Item เดี่ยว, JSON Array หลาย Item หรือไฟล์ Portfolio (.json) โดยระบบจะนำเข้าเฉพาะข้อมูลใน items</small><span class="badge rounded-pill text-bg-success">ตรวจสอบก่อน Import</span></div>
                         <div id="import-error-alert" class="alert alert-danger d-none py-2 px-3 mt-3 mb-3" role="alert"></div>
                         <div id="import-preview-box" class="import-preview-card my-3 d-none">
                             <div class="import-preview-heading">
                                 <div class="import-preview-heading-icon"><i class="bi bi-clipboard2-check"></i></div>
                                 <div>
-                                    <h6 class="fw-bold mb-1">ตัวอย่างข้อมูลที่จะนำเข้า</h6>
+                                    <h6 class="fw-bold mb-1">รายการที่จะนำเข้า</h6>
                                     <span class="import-preview-subtitle">Preview · ตรวจสอบรายละเอียดก่อนบันทึก</span>
                                 </div>
                                 <span class="import-preview-status"><i class="bi bi-check-circle-fill"></i> Validated</span>
                             </div>
                             <div class="import-preview-grid">
                                 <div class="import-preview-field">
-                                    <span class="import-preview-label"><i class="bi bi-hash"></i>ID</span>
+                                    <span class="import-preview-label"><i class="bi bi-hash"></i>ID / จำนวนรายการ</span>
                                     <strong id="prev-id">-</strong>
                                 </div>
                                 <div class="import-preview-field">
