@@ -475,21 +475,62 @@
       verifiedItems = result.data;
 
       const first = verifiedItems[0];
-      $("prev-id").textContent = verifiedItems.length === 1
-        ? first.id
-        : `${verifiedItems.length} รายการ`;
-      $("prev-title").textContent = verifiedItems.length === 1
-        ? first.title
-        : `${first.title} และอีก ${verifiedItems.length - 1} รายการ`;
-      $("prev-type").textContent = verifiedItems.length === 1
-        ? first.type
-        : "Multiple Items";
-      $("prev-date").textContent = verifiedItems.length === 1
-        ? first.date
-        : "หลายวันที่";
-      $("prev-skills").textContent = verifiedItems.length === 1
-        ? first.skills.join(", ")
-        : `รวม ${verifiedItems.length} Items (แสดงตัวอย่างรายการแรก)`;
+      const previewGrid = preview.querySelector(".import-preview-grid");
+      const itemsList = $("prev-items-list");
+      const subtitle = preview.querySelector(".import-preview-subtitle");
+
+      if (verifiedItems.length === 1) {
+        // รายการเดียว: คงรูปแบบ Preview แบบเดิม
+        previewGrid?.classList.remove("d-none");
+        itemsList?.classList.add("d-none");
+        $("prev-id").textContent = first.id;
+        $("prev-title").textContent = first.title;
+        $("prev-type").textContent = first.type;
+        $("prev-date").textContent = first.date;
+        $("prev-skills").textContent = (first.skills || []).join(", ") || "-";
+        if (subtitle) subtitle.textContent = "Preview · ตรวจสอบรายละเอียดก่อนบันทึก";
+      } else {
+        // หลายรายการ: แสดงรายละเอียดของทุก Item แยกเป็นการ์ด
+        previewGrid?.classList.add("d-none");
+        itemsList?.classList.remove("d-none");
+        itemsList.replaceChildren();
+        if (subtitle) subtitle.textContent = `Preview · พบ ${verifiedItems.length} รายการที่จะนำเข้า`;
+
+        verifiedItems.forEach((item, index) => {
+          const card = document.createElement("article");
+          card.className = "import-preview-item";
+
+          const heading = document.createElement("div");
+          heading.className = "import-preview-item-heading";
+          const number = document.createElement("span");
+          number.className = "import-preview-item-number";
+          number.textContent = `#${index + 1}`;
+          const title = document.createElement("strong");
+          title.textContent = item.title || "Untitled Item";
+          heading.append(number, title);
+
+          const details = document.createElement("div");
+          details.className = "import-preview-item-details";
+          [
+            ["ID", item.id],
+            ["Type", item.type],
+            ["Date", item.date],
+            ["Skills", Array.isArray(item.skills) && item.skills.length ? item.skills.join(", ") : "-"]
+          ].forEach(([label, value]) => {
+            const field = document.createElement("div");
+            field.className = "import-preview-item-field";
+            const fieldLabel = document.createElement("span");
+            fieldLabel.textContent = label;
+            const fieldValue = document.createElement("strong");
+            fieldValue.textContent = value ?? "-";
+            field.append(fieldLabel, fieldValue);
+            details.appendChild(field);
+          });
+
+          card.append(heading, details);
+          itemsList.appendChild(card);
+        });
+      }
 
       preview.classList.remove("d-none");
       importButton.disabled = false;
