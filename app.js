@@ -754,6 +754,20 @@ async function initializeApp() {
 
   renderAll();
 
+  // เมื่อเข้าหน้าจาก Navbar ด้วย #add-item-section ให้รอโหลดข้อมูล
+  // และวาดรายการ Portfolio จาก Server ให้เสร็จก่อน แล้วจึงเลื่อนไปยังฟอร์ม
+  // ป้องกัน Anchor เลื่อนผิดตำแหน่งเมื่อรายการผลงานถูกเพิ่มเข้ามาภายหลัง
+  if (window.location.hash === "#add-item-section") {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById("add-item-section")?.scrollIntoView({
+          behavior: "auto",
+          block: "start"
+        });
+      });
+    });
+  }
+
   // ลบ Portfolio ทั้งชุด (รวม Items และ Reflection) หลัง PHP ตรวจสอบรหัสผ่าน
   $("btn-delete-portfolio")?.addEventListener("click", async () => {
     const target = getCurrentPortfolio();
