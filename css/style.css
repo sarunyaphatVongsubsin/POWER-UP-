@@ -1247,3 +1247,164 @@ html {
     .edit-modal-actions button { width:100%; }
 }
 
+
+
+/* ===== Pink outer frame + white inner surface: Export Helper & Items toggle ===== */
+.toggle-items-btn {
+    border: 1.5px solid #e9a3c2 !important;
+    color: #c65f8e !important;
+    background: #fff !important;
+    font-weight: 700;
+    box-shadow: 0 3px 10px rgba(211, 111, 157, .09);
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.toggle-items-btn:hover, .toggle-items-btn:focus-visible {
+    color: #fff !important;
+    border-color: #df83ad !important;
+    background: linear-gradient(135deg, #ef9fc1, #d978a5) !important;
+    box-shadow: 0 5px 14px rgba(211, 111, 157, .22);
+    transform: translateY(-1px);
+}
+
+.export-helper-card {
+    border: 1.5px solid #e9a3c2 !important;
+    border-radius: 1.45rem !important;
+    background: linear-gradient(135deg, #f9dce9 0%, #f4bfd6 52%, #f8dce9 100%) !important;
+    box-shadow: 0 10px 28px rgba(190, 105, 147, .16) !important;
+}
+.export-helper-inner {
+    border: 1px solid rgba(255,255,255,.95);
+    border-radius: 1.1rem;
+    background: #fff;
+    box-shadow: 0 3px 14px rgba(154, 55, 105, .06);
+}
+.export-helper-title {
+    color: #c65f8e;
+    font-weight: 800;
+}
+.export-helper-title i { color: #df83ad; margin-right: .3rem; }
+.export-helper-card .form-label { color: #80536a; }
+.export-helper-card .form-select {
+    border: 1.5px solid #edc2d5;
+    border-radius: .75rem;
+    background-color: #fff;
+}
+.export-helper-card .form-select:focus {
+    border-color: #dc8caf;
+    box-shadow: 0 0 0 .2rem rgba(220, 140, 175, .16);
+}
+.submission-checklist-card {
+    border: 1px solid #f0c9da;
+    border-radius: .95rem;
+    background: #fff;
+}
+.submission-checklist-card h6 { color: #a9517a; }
+.submission-checklist-list { font-size: .92rem; line-height: 1.55; }
+.submission-checklist-list li { padding: .15rem 0; transition: color .2s ease; }
+.submission-checklist-list .text-muted { color: #9b8290 !important; font-weight: 600; }
+.submission-checklist-list .submission-check-passed {
+    color: #145c3b !important;
+    font-weight: 800;
+}
+.submission-checklist-list .submission-check-failed {
+    color: #a51f3d !important;
+    font-weight: 800;
+}
+.btn-export-pink, .btn-copy-pink {
+    border-radius: 999px;
+    padding: .48rem 1rem;
+    font-weight: 700;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.btn-export-pink {
+    color: #fff;
+    border: 1px solid #d978a5;
+    background: linear-gradient(135deg, #e9a3c2, #d978a5);
+}
+.btn-export-pink:hover:not(:disabled) {
+    color: #fff; background: linear-gradient(135deg, #dc8caf, #ca6595);
+    box-shadow: 0 4px 12px rgba(201, 101, 149, .23); transform: translateY(-1px);
+}
+.btn-copy-pink {
+    color: #c65f8e; border: 1.5px solid #e5a0bd; background: #fff;
+}
+.btn-copy-pink:hover:not(:disabled) {
+    color: #fff; border-color: #d978a5; background: #d978a5;
+    box-shadow: 0 4px 12px rgba(201, 101, 149, .18); transform: translateY(-1px);
+}
+.btn-export-pink:disabled, .btn-copy-pink:disabled { opacity: .48; cursor: not-allowed; }
+.peer-testing-link-wrap { border-top: 1px solid #f0c9da; }
+.peer-testing-link-wrap a { color: #c65f8e !important; font-weight: 600; }
+.peer-testing-link-wrap a:hover { color: #a94375 !important; }
+#export-status-alert { border-radius: .8rem; }
+@media (max-width: 575.98px) {
+    .export-helper-card { padding: .75rem !important; }
+    .export-helper-inner { padding: 1.1rem !important; }
+    .export-helper-card .d-flex.flex-wrap.gap-2 button { width: 100%; }
+}
+
+/* Export Helper + Portfolio Items — match Import modal styling */
+#export-section.export-helper-card {
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    border: 1px solid #f1c8dc !important;
+    border-radius: 1.6rem !important;
+    background: #fff !important;
+    box-shadow: 0 18px 40px rgba(75, 30, 55, .10) !important;
+    overflow: hidden !important;
+}
+
+/* White content area: no nested pink frame, no gradient ring */
+#export-section .export-helper-inner,
+#export-section.export-helper-card > .export-helper-inner {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: clamp(1rem, 2.5vw, 1.5rem) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+/* Pink Import-style section header */
+#export-section .export-helper-title {
+    margin: calc(clamp(1rem, 2.5vw, 1.5rem) * -1) calc(clamp(1rem, 2.5vw, 1.5rem) * -1) 1.25rem !important;
+    padding: 1rem clamp(1rem, 2.5vw, 1.5rem) !important;
+    border: 0 !important;
+    border-bottom: 1px solid #f1c8dc !important;
+    border-radius: 0 !important;
+    background: linear-gradient(135deg, #fff1f7, #fce3ee) !important;
+    color: #a94373 !important;
+}
+
+#export-section .submission-checklist-card {
+    border: 1px solid #f0c9da !important;
+    border-radius: 1rem !important;
+    background: #fff !important;
+}
+
+#portfolio-items-section.items-panel {
+    padding: 1.25rem !important;
+    border: 1px solid #f1c8dc !important;
+    border-radius: 1.25rem !important;
+    background: #fff !important;
+    box-shadow: 0 8px 24px rgba(190, 105, 147, .08) !important;
+}
+
+#portfolio-items-section .toggle-items-btn {
+    padding: .45rem 1rem !important;
+    border: 1px solid #e9a3c2 !important;
+    border-radius: 999px !important;
+    background: #fff !important;
+    color: #bd5d89 !important;
+    font-weight: 700;
+    transition: .18s ease;
+}
+#portfolio-items-section .toggle-items-btn:hover,
+#portfolio-items-section .toggle-items-btn:focus-visible {
+    border-color: #d978a5 !important;
+    background: #fff0f6 !important;
+    color: #a94373 !important;
+    box-shadow: 0 4px 12px rgba(211, 111, 157, .16) !important;
+    transform: translateY(-1px);
+}

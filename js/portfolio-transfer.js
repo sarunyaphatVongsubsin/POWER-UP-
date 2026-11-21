@@ -223,7 +223,7 @@
     const previous = select.value;
 
     select.innerHTML =
-      '<option value="">-- กรุณาเลือก Portfolio --</option>';
+      '<option value="">กรุณาเลือก Portfolio</option>';
 
     portfolios.forEach(p => {
       const option = document.createElement("option");
@@ -557,7 +557,19 @@
 
       const id = exportSelect.value;
 
-      if (!id) return;
+      const resetChecklist = () => {
+        ["chk-imported-item", "chk-reflection", "chk-evidence"].forEach(checkId => {
+          const el = $(checkId);
+          if (!el) return;
+          el.textContent = "กรุณาเลือก Portfolio";
+          el.className = "mb-2 text-muted";
+        });
+      };
+
+      if (!id) {
+        resetChecklist();
+        return;
+      }
 
       try {
         const latest = await request(API);
@@ -603,25 +615,34 @@
         );
 
         // ---------- แสดงสถานะ Checklist ----------
-        const setCheck = (id, passed) => {
+        const setCheck = (id, passed, successText, missingText) => {
           const el = $(id);
-
           if (!el) return;
 
+          el.textContent = passed ? successText : missingText;
           el.className = passed
-            ? "mb-1 text-success fw-semibold"
-            : "mb-1 text-danger";
-
-          const icon = el.querySelector(".chk-icon");
-
-          if (icon) {
-            icon.textContent = passed ? "✓" : "✗";
-          }
+            ? "mb-2 submission-check-passed"
+            : "mb-2 submission-check-failed";
         };
 
-        setCheck("chk-imported-item", imported.length > 0);
-        setCheck("chk-reflection", completeReflection);
-        setCheck("chk-evidence", hasEvidence);
+        setCheck(
+          "chk-imported-item",
+          imported.length > 0,
+          "มี Item จากเพื่อนต่างกลุ่มอย่างน้อย 1 รายการ",
+          "ไม่มี Item จากเพื่อนต่างกลุ่มอย่างน้อย 1 รายการ"
+        );
+        setCheck(
+          "chk-reflection",
+          completeReflection,
+          "Item ที่นำเข้ามีข้อมูล Reflection ครบถ้วน",
+          "Item ที่นำเข้ามีข้อมูล Reflection ไม่ครบถ้วน"
+        );
+        setCheck(
+          "chk-evidence",
+          hasEvidence,
+          "Item ที่นำเข้ามีหลักฐาน Evidence แนบอยู่",
+          "Item ที่นำเข้าไม่มีหลักฐาน Evidence แนบอยู่"
+        );
 
         // ---------- สร้างข้อมูล JSON ----------
         exportPayload = JSON.stringify({

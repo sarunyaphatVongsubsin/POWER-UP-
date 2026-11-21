@@ -200,7 +200,7 @@
                             <h2 class="h4 fw-bold mb-0">Portfolio Items</h2>
                             <span id="portfolio-items-count" class="badge rounded-pill">0</span>
                         </div>
-                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 toggle-items-btn"
+                        <button class="btn btn-sm rounded-pill px-3 toggle-items-btn"
                             type="button" data-bs-toggle="collapse" data-bs-target="#portfolio-items-collapse"
                             aria-expanded="true" aria-controls="portfolio-items-collapse">
                             <span class="when-opened">▲ Hide Items</span>
@@ -475,9 +475,9 @@
             </div>
         </div>
         <!-- === ส่วน Export My Portfolio & Submission Helper (Issue #26) === -->
-        <section id="export-section" class="card shadow-sm p-4 mt-4 mb-4"
-            style="border-radius: 12px; border-color: #b8e994;">
-            <h4 class="mb-3" style="color: #009432; font-weight: 600;">
+        <section id="export-section" class="card shadow-sm p-3 mt-4 mb-4 export-helper-card">
+            <div class="export-helper-inner p-4">
+            <h4 class="export-helper-title mb-3">
                 <i class="bi bi-box-arrow-up"></i> Export My Portfolio & Submission Helper
             </h4>
 
@@ -485,23 +485,17 @@
             <div class="mb-3">
                 <label for="export-source-port" class="form-label fw-bold">เลือก Portfolio ที่ต้องการ Export:</label>
                 <select id="export-source-port" class="form-select">
-                    <option value="">-- กรุณาเลือก Portfolio --</option>
+                    <option value="">กรุณาเลือก Portfolio</option>
                 </select>
             </div>
 
             <!-- Submission Checklist -->
-            <div class="card bg-light border-0 p-3 mb-3">
-                <h6 class="fw-bold mb-2">Submission Checklist (ตรวจสอบความพร้อมก่อนส่งงาน):</h6>
-                <ul class="list-unstyled mb-0" style="font-size: 0.92rem;">
-                    <li id="chk-imported-item" class="mb-1 text-danger">
-                        <span class="chk-icon">✗</span> มี Item จากเพื่อนต่างกลุ่มอย่างน้อย 1 รายการ
-                    </li>
-                    <li id="chk-reflection" class="mb-1 text-danger">
-                        <span class="chk-icon">✗</span> Item ที่นำเข้ามีข้อมูล Reflection ครบถ้วน
-                    </li>
-                    <li id="chk-evidence" class="mb-0 text-danger">
-                        <span class="chk-icon">✗</span> Item ที่นำเข้ามีหลักฐาน Evidence แนบอยู่
-                    </li>
+            <div class="submission-checklist-card p-3 mb-3">
+                <h6 class="fw-bold mb-3">Submission Checklist (ตรวจสอบความพร้อมก่อนส่งงาน):</h6>
+                <ul class="list-unstyled mb-0 submission-checklist-list">
+                    <li id="chk-imported-item" class="mb-2 text-muted">กรุณาเลือก Portfolio</li>
+                    <li id="chk-reflection" class="mb-2 text-muted">กรุณาเลือก Portfolio</li>
+                    <li id="chk-evidence" class="mb-0 text-muted">กรุณาเลือก Portfolio</li>
                 </ul>
             </div>
 
@@ -511,22 +505,23 @@
 
             <!-- ปุ่ม Export และ Copy JSON -->
             <div class="d-flex flex-wrap gap-2 mb-3">
-                <button type="button" id="btn-export-json" class="btn btn-success btn-sm px-3" disabled>
+                <button type="button" id="btn-export-json" class="btn btn-export-pink btn-sm px-3" disabled>
                     <i class="bi bi-download"></i> Export My Portfolio (my-portfolio.json)
                 </button>
-                <button type="button" id="btn-copy-json" class="btn btn-outline-secondary btn-sm px-3" disabled>
+                <button type="button" id="btn-copy-json" class="btn btn-copy-pink btn-sm px-3" disabled>
                     <i class="bi bi-clipboard"></i> Copy JSON
                 </button>
             </div>
 
             <!-- ลิงก์ไป Peer Testing & Constructive Feedback Form -->
-            <div class="border-top pt-3 mt-2">
+            <div class="peer-testing-link-wrap pt-3 mt-2">
                 <p class="mb-1 fw-bold" style="font-size: 0.9rem;">แบบประเมินหลังการทดสอบ (Peer Testing):</p>
                 <a id="peer-testing-link" href="#peer-testing-form-url" target="_blank" rel="noopener noreferrer"
                     class="btn btn-link p-0 text-decoration-none" style="font-size: 0.9rem;">
                     <i class="bi bi-box-arrow-up-right"></i> Peer Testing & Constructive Feedback Form (Google Form -
                     ใส่ URL เมื่อได้รับ)
                 </a>
+            </div>
             </div>
         </section>
     </main>

@@ -1020,7 +1020,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateChecklistItem(element, isPassed, text) {
     if (!element) return;
     element.className = isPassed ? 'mb-1 text-success fw-semibold' : 'mb-1 text-danger';
-    element.textContent = `${isPassed ? '✓' : '✗'} ${text}`;
+    element.textContent = text;
   }
 
   function evaluatePortfolioChecklist(portfolioId) {
