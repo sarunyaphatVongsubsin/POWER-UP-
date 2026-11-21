@@ -330,6 +330,13 @@
       importModal?.show();
     });
 
+    // เปิด Import Modal โดยตรงเมื่อเข้ามาจาก Quick Action บนหน้า Home
+    // ตรวจหลังจากผูก click handler และโหลดรายการ Portfolio เรียบร้อยแล้ว
+    if (window.location.hash === "#btn-import-item") {
+      syncImportTarget();
+      importModal?.show();
+    }
+
     // ---------- เปลี่ยนวิธีนำเข้าระหว่าง Paste และ Upload ----------
     function setImportMode(mode) {
       const uploadMode = mode === "upload";

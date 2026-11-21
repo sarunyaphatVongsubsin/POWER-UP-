@@ -635,9 +635,6 @@ async function initializeApp() {
     }
   }
 
-  // ปุ่ม Import บน Home เรียกใช้ Modal เดิม ไม่สร้าง workflow ซ้ำ
-  $("home-import-action")?.addEventListener("click", () => $("btn-import-item")?.click());
-
   $("btn-edit-profile")?.addEventListener("click", editCurrentProfile);
 
   // ลบ Item หลังยืนยัน แล้วบันทึกและแสดงข้อมูลใหม่
