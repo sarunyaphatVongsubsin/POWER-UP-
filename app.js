@@ -635,6 +635,9 @@ async function initializeApp() {
     }
   }
 
+  // ปุ่ม Import บน Home เรียกใช้ Modal เดิม ไม่สร้าง workflow ซ้ำ
+  $("home-import-action")?.addEventListener("click", () => $("btn-import-item")?.click());
+
   $("btn-edit-profile")?.addEventListener("click", editCurrentProfile);
 
   // ลบ Item หลังยืนยัน แล้วบันทึกและแสดงข้อมูลใหม่
@@ -708,10 +711,48 @@ async function initializeApp() {
     renderPortfolioView(current);
   }
 
+  // แสดงภาพรวมหน้า Home จากข้อมูลจริงที่โหลดจาก PHP Server
+  function renderHomeDashboard() {
+    const portfolioTotal = $("home-portfolio-total");
+    const itemTotal = $("home-item-total");
+    const recentActivity = $("home-recent-activity");
+    const allItems = portfolios.flatMap(portfolio =>
+      (portfolio.items || []).map(item => ({
+        ...item, portfolioName: portfolio.name,
+        activityDate: item.updatedAt || item.date || ""
+      }))
+    );
+    if (portfolioTotal) portfolioTotal.textContent = portfolios.length;
+    if (itemTotal) itemTotal.textContent = allItems.length;
+    if (!recentActivity) return;
+    recentActivity.innerHTML = "";
+    if (!allItems.length) {
+      const empty = document.createElement("div");
+      empty.className = "home-empty-activity";
+      empty.innerHTML = '<i class="bi bi-stars"></i><span>ยังไม่มีกิจกรรมล่าสุด เริ่มเพิ่มผลงานแรกของคุณได้เลย!</span>';
+      recentActivity.appendChild(empty);
+      return;
+    }
+    allItems.sort((a, b) => (Date.parse(b.activityDate) || 0) - (Date.parse(a.activityDate) || 0));
+    allItems.slice(0, 3).forEach(item => {
+      const row = document.createElement("article"); row.className = "home-activity-row";
+      const icon = document.createElement("span"); icon.className = "activity-item-icon";
+      icon.innerHTML = '<i class="bi bi-journal-richtext"></i>';
+      const details = document.createElement("div"); details.className = "activity-item-details";
+      const title = document.createElement("strong"); title.textContent = item.title || "Untitled Item";
+      const meta = document.createElement("span");
+      meta.textContent = `${item.portfolioName} · ${item.activityDate || "ไม่ระบุวันที่"}`;
+      details.append(title, meta);
+      const tag = document.createElement("span"); tag.className = "activity-tag"; tag.textContent = "Portfolio Item";
+      row.append(icon, details, tag); recentActivity.appendChild(row);
+    });
+  }
+
   // อัปเดตจำนวน Portfolio และวาดข้อมูลทั้งหมด
   function renderAll() {
     if (portfolioCountEl) portfolioCountEl.textContent = portfolios.length;
     renderSelect();
+    renderHomeDashboard();
   }
 
   renderAll();
