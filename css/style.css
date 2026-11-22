@@ -1534,3 +1534,57 @@ html {
         scroll-padding-top: 92px;
     }
 }
+
+/* Small mobile: place Add Item beside Reset Data inside the expanded menu. */
+@media (max-width: 424.98px) {
+    .mobile-nav-actions .nav-add-btn {
+        display: none;
+    }
+
+    .desktop-nav-actions {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .desktop-nav-actions .nav-add-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: auto;
+        white-space: nowrap;
+    }
+
+    .desktop-nav-actions #btn-reset-data {
+        width: auto;
+        white-space: nowrap;
+    }
+}
+
+
+/* Home page: on very small screens, place Add Item inside the hamburger menu
+   and let it use the full available menu width. */
+@media (max-width: 424.98px) {
+    .home-page .mobile-nav-actions .nav-add-btn {
+        display: none;
+    }
+
+    .home-page .desktop-nav-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .home-page .desktop-nav-actions .nav-add-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        white-space: nowrap;
+    }
+}
