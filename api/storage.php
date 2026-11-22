@@ -16,7 +16,7 @@ if (!is_dir(DATA_DIR) && !@mkdir(DATA_DIR, 0775, true) && !is_dir(DATA_DIR)) {
 define('DATA_FILE', DATA_DIR . '/portfolios.json');
 
 // รหัสผ่านสำหรับการลบและ Reset ข้อมูล (แก้ไขค่าได้ตรงนี้เพียงจุดเดียว)
-define('DELETE_PASSWORD', '1234');
+define('DELETE_PASSWORD', 'group6');
 
 // ล็อกไฟล์ระหว่างอ่าน/เขียน ป้องกัน Request หลายรายการเขียนทับกัน
 function lockData() {
