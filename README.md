@@ -34,35 +34,6 @@ POWER-UP เป็นเว็บไซต์สำหรับบันทึ�
 **GitHub Repository:**  
 https://github.com/sarunyaphatVongsubsin/POWER-UP-
 
-## 👥 Team Members & Responsibilities
-
-### 👑 Project Management & Quality Assurance (QA & Delivery)
-
-| No. | Member | Student ID | GitHub | Primary Role | Key Responsibilities |
-| :---: | :--- | :---: | :---: | :--- | :--- |
-| **1** | `นายศรัณยภัทร ว่องทรัพย์สิน` | `6909650704` | [@sarunyaphatVongsubsin](https://github.com/sarunyaphatVongsubsin) | **Repo Owner & Project Manager** | • บริหารจัดการและแจกจ่าย GitHub Issues<br>• ควบคุม Git Workflow, ตรวจสอบ Pull Requests และดูแล Branch กลาง<br>• กำกับดูแล Sprint ให้ตรงตามกำหนดเวลา |
-| **2** | `นางสาวพัทธนันท์ อาจรัตนกูล` | `6909650621` | [@PattananAjrattanakul](https://github.com/PattananAjrattanakul) | **QA Lead & Submission Representative** | • ทดสอบระบบภาพรวม (E2E Test) ตาม Acceptance Criteria<br>• จัดทำคลิปวิดีโอสาธิตการทำงานและบรรยายระบบ<br>• รวบรวมเอกสารรายงาน PDF (Retrospective/Sprint Plan) และส่งงานบน Courseweb |
-
-<br>
-
-### 🎨 Frontend Development (UI / UX & Form Design)
-
-| No. | Member | Student ID | GitHub | Assigned Issues | Focus Area |
-| :---: | :--- | :---: | :---: | :--- | :--- |
-| **3** | `นางสาวอภัฏสลัณค์ สีทา` | `6909650787` | [@aphatsalanseetha](https://github.com/aphatsalanseetha) | `#1` Add Page to Repo<br>`#2` Design Portfolio Creation Form | **Base Structure & Portfolio Form** |
-| **4** | `นางสาวนวพร สมพงศ์` | `6909650522` | [@nawaphonlnwza007](https://github.com/nawaphonlnwza007) | `#3` Design Portfolio Item Form<br>`#4` Display Portfolios and Items | **Item Form & Portfolio List Layout** |
-| **5** | `นางสาวนภวรรณ เจิมจรุง` | `6909650514` | [@napawanjj](https://github.com/napawanjj) | `#5` Show Validation Errors and Save Status<br>`#6` Improve Responsive Design and Accessibility | **Form Feedback, A11y & Mobile Responsive** |
-
-<br>
-
-### ⚙️ Backend & Data Logic (State Management & Local Storage)
-
-| No. | Member | Student ID | GitHub | Assigned Issues | Focus Area |
-| :---: | :--- | :---: | :---: | :--- | :--- |
-| **6** | `นายภัทรพล วงษ์โฉม` | `6909650647` | [@Pattarapol-wongchom](https://github.com/Pattarapol-wongchom) | `#7` Define Portfolio Data Structure<br>`#8` Validate Portfolio and Item Data | **Data Schema Definition & Input Validation Logic** |
-| **7** | `นายธัชธรรม ปั้นขุนทด` | `6909650480` | [@ThatchathamPankhunthod](https://github.com/ThatchathamPankhunthod) | `#9` Save and Load Data with localStorage<br>`#10` Add and Manage Portfolio Items | **Storage Engine & Item CRUD Management** |
-| **8** | `นายวโรตม์ วิไล` | `6909650696` | [@varotvil-sketch](https://github.com/varotvil-sketch) | `#11` Support Multiple Portfolios and Data Selection<br>`#12` Prepare Sample Data and Reset Functionality | **Multi-Profile Switching & Sample/Reset Engine** |
-
 ### 6. ระบบจัดเก็บข้อมูลด้วย PHP (สำหรับเวอร์ชัน Server)
 
 - เวอร์ชันที่เชื่อมต่อ PHP ต้องเปิดผ่าน Web Server ที่รองรับ PHP เท่านั้น เช่น Apache หรือ PHP Built-in Server
@@ -71,7 +42,7 @@ https://github.com/sarunyaphatVongsubsin/POWER-UP-
 - ข้อมูล Portfolio และ Portfolio Item (รวม Reflection) จะถูกเก็บในไฟล์ JSON ฝั่ง Server ไม่ใช่ LocalStorage
 
 
-### 6. PHP Server Storage และ Import / Export
+### 7. PHP Server Storage และ Import / Export
 - ระบบจัดเก็บข้อมูลหลักอยู่บน Server ผ่าน PHP API และไฟล์ JSON
 - Import Portfolio Item ได้จากไฟล์ `.json` หรือวาง JSON พร้อม Preview และตรวจสอบข้อมูลก่อนบันทึก
 - ป้องกันการ Import Item ID ซ้ำใน Portfolio เดียวกัน
@@ -134,3 +105,19 @@ https://github.com/sarunyaphatVongsubsin/POWER-UP-
 - **Hard:** ใช้เครื่องหมายบวก (+) ลบ (−) คูณ (×) และหาร (÷) รวมถึงวงเล็บ
 
 **พร้อมหรือยัง?** หยิบไพ่ ตั้งสมการ แล้ว RUSH ไปสู่ชัยชนะ!
+
+---
+
+## 👥 Team Members
+
+| ลำดับ | ชื่อ-นามสกุล | รหัสนักศึกษา | GitHub | Role | ระบบงานที่รับผิดชอบ |
+| :---: | :--- | :---: | :--- | :--- | :--- |
+| **1** | นายศรัณยภัทร ว่องทรัพย์สิน | `6909650704` | [@sarunyaphatVongsubsin](https://github.com/sarunyaphatVongsubsin) | **Project Manager** | บริหารภาพรวมโปรเจกต์ และ Git Workflow |
+| **2** | นางสาวพัทธนันท์ อาจรัตนกูล | `6909650621` | [@PattananAjrattanakul](https://github.com/PattananAjrattanakul) | **QA Lead** | ทดสอบระบบ (QA), วิดีโอสาธิต และเอกสาร |
+| **3** | นางสาวอภัฏสลัณค์ สีทา | `6909650787` | [@aphatsalanseetha](https://github.com/aphatsalanseetha) | **Frontend UI** | โครงสร้างหน้าเว็บหลัก, ระบบธีม และฟอร์ม Portfolio |
+| **4** | นางสาวนวพร สมพงศ์ | `6909650522` | [@nawaphonlnwza007](https://github.com/nawaphonlnwza007) | **Booth & Navbar** | ระบบบูธกิจกรรม (Host Tool) และแถบ Navigation |
+| **5** | นางสาวนภวรรณ เจิมจรุง | `6909650514` | [@napawanjj](https://github.com/napawanjj) | **UI & Accessibility** | หน้าต่าง Import / Export และ Submission Checklist |
+| **6** | นายภัทรพล วงษ์โฉม | `6909650647` | [@Pattarapol-wongchom](https://github.com/Pattarapol-wongchom) | **Data Schema** | ออกแบบ JSON Schema และตรรกะ Validation |
+| **7** | นายธัชธรรม ปั้นขุนทด | `6909650480` | [@ThatchathamPankhunthod](https://github.com/ThatchathamPankhunthod) | **Full-Stack Core** | ระบบ Backend PHP API, จัดเก็บไฟล์ และ Batch Import |
+| **8** | นายวโรตม์ วิไล | `6909650696` | [@varotvil-sketch](https://github.com/varotvil-sketch) | **Export & Validator** | ระบบ Export JSON, ตรวจสอบ Reflection |
+
