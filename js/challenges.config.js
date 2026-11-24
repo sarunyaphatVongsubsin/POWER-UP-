@@ -15,7 +15,7 @@ const CHALLENGE_CONFIG = {
     "Problem Solving",
     "Speed Thinking"
   ],
-  defaultEvidenceUrl: "https://github.com/sarunyaphatVongsubsin/POWER-UP-",
+  defaultEvidenceUrl: "https://drive.google.com/file/d/1yiq_EyYRmWKqCkeJokU72dgfs2FF2DIu/view?usp=sharing",
   defaultReflection: {
     whatIDid:
       "เล่นเกม Number Rush ประจำบูธกลุ่ม 6 โดยนำเลขจากไพ่ 4 ใบมาคำนวณให้ได้ผลลัพธ์ตรงกับไพ่เป้าหมายทั้งหมด 5 รอบ",
